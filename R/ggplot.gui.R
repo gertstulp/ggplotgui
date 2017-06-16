@@ -1,7 +1,4 @@
 ggplot.gui <- function(dataset=NA) {
-  library(shiny)
-  library(plotly)
-  library(stringr)
 
   ui <- fluidPage(
 
@@ -10,8 +7,8 @@ ggplot.gui <- function(dataset=NA) {
     sidebarPanel(
       conditionalPanel(condition="input.tabs1=='Data upload'",
                        h4("Enter data"),
-                       radioButtons("dataInput", "", list("Load sample data"=1,"Upload file"=2,"Paste data"=3, "Data passed through R environment"=4),
-                                    selected=if(!is.na(dataset)) 4 else 1),
+                       radioButtons("dataInput", "", choices = if(is.data.frame(dataset)) list("Load sample data"=1,"Upload file"=2,"Paste data"=3, "Data passed through R environment"=4) else list("Load sample data"=1,"Upload file"=2,"Paste data"=3) ,
+                                    selected=if(is.data.frame(dataset)) 4 else 1),
                        conditionalPanel(condition="input.dataInput=='1'",
                                         h5("dataset 'mpg' from library(ggplot2) loaded")
                        ),
@@ -272,4 +269,7 @@ ggplot.gui <- function(dataset=NA) {
 }
 #exploration_distributions(mpg)
 #exploration_distributions(mtcars)
-ggplot.gui(mpg)
+library(shiny)
+library(plotly)
+library(stringr)
+ggplot.gui()
