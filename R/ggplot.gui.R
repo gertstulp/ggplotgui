@@ -1,4 +1,13 @@
-ggplot.gui <- function(dataset=NA) {
+#' Creating a graphical user interface for creating ggplot-graphs.
+#'
+#' @param dataset A dataset (optional).
+#' @return A GUI for visualizing data from \code{dataset}.
+#' @examples
+#' ggplot.gui()
+#' ggplot.gui(mpg)
+
+
+ggplot.gui <- function( dataset = NA ) {
 
   ui <- fluidPage(
 
