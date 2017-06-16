@@ -1,0 +1,18 @@
+Package: ggplot.gui
+Title: Create ggplots via a GUI
+Version: 0.0.0.9000
+Authors@R: person(“Gert”, “Stulp”, email = “g.stulp@rug.nl”, role = c("aut", "cre)
+Description: This package provides some functions with which you can easily explore your data using "point and click". The plots are made through ggplot and are both interactive (using plotly) and reactive (using shiny). You will also have access to a more user-friendly table of your data (which can be easily sorted and searched through) than the one that R and RStudio typically give you. Importantly, the R-code to produce the plot will also be provided, so that users of this package might choose to refrain from it in the future and use the code directly in R(Studio). 
+Depends: R (>= 3.3.2)
+Imports:
+    shiny,
+    tidyverse,
+    plotly,
+    ggplot2,
+    ReporteRs,
+    stringr 
+License: GPL (>= 2) | file LICENSE
+BugReports: https://github.com/gertstulp/ggplot.gui/issues
+URL: https://github.com/gertstulp/ggplot.gui
+Encoding: UTF-8
+LazyData: true
