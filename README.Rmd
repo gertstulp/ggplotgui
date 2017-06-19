@@ -12,6 +12,11 @@ knitr::opts_chunk$set(
 )
 ```
 
+ggplotgui
+==========
+
+[![CRAN\_Release\_Badge](http://www.r-pkg.org/badges/version-ago/ggplot.gui)](https://CRAN.R-project.org/package=ggplot.gui) [![CRAN\_Download\_Badge](http://cranlogs.r-pkg.org/badges/ggplot.gui)](https://CRAN.R-project.org/package=ggplot.gui)
+
 # Quick overview
 This package allows users to visualize their data using an online graphical user interface (GUI) that makes use of [R](https://www.r-project.org/)'s visualization package [ggplot](http://ggplot2.org/). There are two ways of using this functionality: 1) online, where users can upload their data and visualize it without needing R, by visiting this link: ; 2) from within the R-environment (by using the ggplot.gui() function). In either case, R-code will be provided such that the user can recreate the graphs within the R-environment.  
 
@@ -24,8 +29,8 @@ This package allows users to visualize their data using an online graphical user
 # In order to install the package, you'll need to use the "devtools"-package
 install.packages("devtools")
 library("devtools")
-devtools::install_github("gertstulp/ggplot.gui")
-library("ggplot.gui")
+devtools::install_github("gertstulp/ggplotgui")
+library("ggplotgui")
 ```
 
 # Usage
@@ -34,13 +39,13 @@ There are two ways to use this functionality:
 * By calling it from within R
 ```{r, eval=FALSE}
 # You can call the function with and without passing a dataset
-ggplot.gui()
-ggplot.gui(mpg) # Passing ggplot's mpg dataset
+ggplot_shiny()
+ggplot_shiny(mpg) # Passing ggplot's mpg dataset
 ```
 * By using the following link:
 
 This will open up the following screen:
-![](man/figures/tab_data upload.png)
+![](man/figures/tab_data_upload.png)
 
 A ggplot-graph can be made through point and click:
 ![](man/figures/tab_ggplot.png)

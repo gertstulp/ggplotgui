@@ -1,5 +1,10 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+ggplot.gui
+==========
+
+[![CRAN\_Release\_Badge](http://www.r-pkg.org/badges/version-ago/ggplot.gui)](https://CRAN.R-project.org/package=ggplot.gui) [![CRAN\_Download\_Badge](http://cranlogs.r-pkg.org/badges/ggplot.gui)](https://CRAN.R-project.org/package=ggplot.gui)
+
 Quick overview
 ==============
 
@@ -36,7 +41,7 @@ ggplot.gui(mpg) # Passing ggplot's mpg dataset
 
 -   By using the following link:
 
-This will open up the following screen: ![](man/figures/tab_data%20upload.png)
+This will open up the following screen: ![](man/figures/tab_data_upload.png)
 
 A ggplot-graph can be made through point and click: ![](man/figures/tab_ggplot.png)
 

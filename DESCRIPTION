@@ -1,4 +1,4 @@
-Package: ggplot.gui
+Package: ggplotgui
 Title: Create ggplots via a GUI
 Version: 0.0.0.9000
 Authors@R: person("Gert", "Stulp", email = "g.stulp@rug.nl", role = c("aut", "cre"))
@@ -9,7 +9,7 @@ Imports:
     shiny,
     ggplot2,
     stringr 
-License: GPL (>= 2) | file LICENSE
+License: GPL-3
 BugReports: https://github.com/gertstulp/ggplot.gui/issues
 URL: https://github.com/gertstulp/ggplot.gui/
 Encoding: UTF-8
