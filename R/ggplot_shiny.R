@@ -22,14 +22,16 @@ ggplot_shiny <- function( dataset = NA ) {
       conditionalPanel(condition = "input.tabs=='Data upload'",
                        h4("Enter data"),
                        radioButtons( "data_input", "",
-                                    choices = if (is.data.frame(dataset))
+                                    choices = if (is.data.frame(dataset)) {
                                       list("Load sample data" = 1,
                                            "Upload file" = 2,
                                            "Paste data" = 3,
                                       "Data passed through R environment" = 4)
-                                    else list("Load sample data" = 1,
-                                              "Upload file" = 2,
-                                              "Paste data" = 3),
+                                    } else {
+                                        list("Load sample data" = 1,
+                                             "Upload file" = 2,
+                                             "Paste data" = 3)
+                                    },
                                     selected = if (is.data.frame(dataset)) 4 else 1),
                        conditionalPanel(condition = "input.data_input=='1'",
                                         h5("dataset 'mpg' from library(ggplot2) loaded")
@@ -269,10 +271,14 @@ ggplot_shiny <- function( dataset = NA ) {
 
     })
 
+    #mpg_reactive <- reactive({
+    #  get("mpg")
+    #})
+
     # *** Read in data matrix ***
     df_shiny <- reactive({
       if (input$data_input == 1){
-        data <- mpg
+        data <- get("mpg")
       } else if (input$data_input == 2){
         file_in <- input$upload
         # Avoid error message while file is not uploaded yet

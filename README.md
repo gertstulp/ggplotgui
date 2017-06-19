@@ -3,7 +3,7 @@
 ggplotgui
 =========
 
-[![CRAN\_Release\_Badge](http://www.r-pkg.org/badges/version-ago/ggplot.gui)](https://CRAN.R-project.org/package=ggplot.gui) [![CRAN\_Download\_Badge](http://cranlogs.r-pkg.org/badges/ggplot.gui)](https://CRAN.R-project.org/package=ggplot.gui)
+[![Travis-CI Build Status](https://travis-ci.org/gertstulp/ggplot.gui.svg?branch=master)](https://travis-ci.org/gertstulp/ggplot.gui) [![CRAN\_Release\_Badge](http://www.r-pkg.org/badges/version-ago/ggplot.gui)](https://CRAN.R-project.org/package=ggplot.gui) [![CRAN\_Download\_Badge](http://cranlogs.r-pkg.org/badges/ggplot.gui)](https://CRAN.R-project.org/package=ggplot.gui)
 
 Quick overview
 ==============
