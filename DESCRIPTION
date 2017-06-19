@@ -1,8 +1,8 @@
 Package: ggplotgui
-Title: Create ggplots via a GUI
+Title: Create ggplots via a Graphical User Interface
 Version: 0.0.0.9000
 Authors@R: person("Gert", "Stulp", email = "g.stulp@rug.nl", role = c("aut", "cre"))
-Description: This package provides some functions with which you can easily explore your data using "point and click".  
+Description: Easily explore data by creating ggplots through a (shiny-)GUI. R-code to recreate graph provided.   
 Depends: R (>= 3.3.2)
 Imports:
     plotly,
