@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-ggplot.gui
-==========
+ggplotgui
+=========
 
 [![CRAN\_Release\_Badge](http://www.r-pkg.org/badges/version-ago/ggplot.gui)](https://CRAN.R-project.org/package=ggplot.gui) [![CRAN\_Download\_Badge](http://cranlogs.r-pkg.org/badges/ggplot.gui)](https://CRAN.R-project.org/package=ggplot.gui)
 
@@ -22,8 +22,8 @@ Installation
 # In order to install the package, you'll need to use the "devtools"-package
 install.packages("devtools")
 library("devtools")
-devtools::install_github("gertstulp/ggplot.gui")
-library("ggplot.gui")
+devtools::install_github("gertstulp/ggplotgui")
+library("ggplotgui")
 ```
 
 Usage
@@ -35,8 +35,8 @@ There are two ways to use this functionality:
 
 ``` r
 # You can call the function with and without passing a dataset
-ggplot.gui()
-ggplot.gui(mpg) # Passing ggplot's mpg dataset
+ggplot_shiny()
+ggplot_shiny(mpg) # Passing ggplot's mpg dataset
 ```
 
 -   By using the following link:
