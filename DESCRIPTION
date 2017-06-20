@@ -1,5 +1,5 @@
 Package: ggplotgui
-Title: Create ggplots via a Graphical User Interface
+Title: Create Ggplots via a Graphical User Interface
 Version: 0.0.0.9000
 Authors@R: person("Gert", "Stulp", email = "g.stulp@rug.nl", role = c("aut", "cre"))
 Description: Easily explore data by creating ggplots through a (shiny-)GUI. R-code to recreate graph provided.   
