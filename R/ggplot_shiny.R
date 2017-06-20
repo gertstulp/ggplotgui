@@ -5,11 +5,12 @@
 #' @examples
 #' #ggplot_shiny()
 #' #ggplot_shiny(mpg)
-#' @importFrom utils read.table
 #' @import ggplot2
 #' @import shiny
 #' @importFrom plotly ggplotly plotlyOutput renderPlotly
 #' @importFrom stringr str_replace_all
+#' @importFrom readr read_delim
+
 
 #' @export
 ggplot_shiny <- function( dataset = NA ) {
@@ -40,23 +41,29 @@ ggplot_shiny <- function( dataset = NA ) {
                                         h5("Upload delimited text file: "),
                                         fileInput("upload", "",
                                                   multiple = FALSE),
-                                        radioButtons("fileSepDF", "Delimiter:",
-                                                     list("Comma" = 1,
-                                                          "Tab" = 2,
-                                                          "Semicolon" = 3)),
+                                        selectInput("upload_delim", "Delimiter:",
+                                                     list("Semicolon" = ";",
+                                                          "Tab" = "\t",
+                                                          "Comma" = ",",
+                                                          "Space" = " "),
+                                                    selected = "Semicolon"),
                                         HTML('<p>Data in <a href="http://en.wikipedia.org/wiki/Delimiter-separated_values">delimited text files </a> can be separated by comma, tab or semicolon.
                                              For example, Excel data can be exported in .csv (comma separated) or .tab (tab separated) format. </p>')
                                         ),
                        conditionalPanel(condition = "input.data_input=='3'",
                                         h5("Paste data below:"),
-                                        tags$textarea(id = "myData", rows = 10,
-                                                      cols = 5, ""),
-                                        actionButton("clearText_button",
-                                                     "Clear data"),
-                                        radioButtons("fileSepP", "Separator:",
-                                                     list("Comma" = 1,
-                                                          "Tab" = 2,
-                                                          "Semicolon" = 3))
+                                        tags$textarea(id = "myData",
+                                                      placeholder = "Add data here",
+                                                      rows = 10,
+                                                      cols = 20, ""),
+                                        actionButton("submit_data_button",
+                                                     "Submit data"),
+                                        selectInput("text_delim", "Delimiter:",
+                                                    list("Semicolon" = ";",
+                                                         "Tab" = "\t",
+                                                         "Comma" = ",",
+                                                         "Space" = " "),
+                                                    selected = "Semicolon")
                        )
         ),
 
@@ -196,7 +203,6 @@ ggplot_shiny <- function( dataset = NA ) {
       }
 
       # if at least one facet column/row is specified, add it
-      # CHECK WHETHER THIS WORKS WITH DOUBLE QUOTES
       facets <- paste(input$facet_row, "~", input$facet_col)
       if (facets != ". ~ .") p <- paste(p, "+", "facet_grid(", facets, ")")
 
@@ -271,10 +277,6 @@ ggplot_shiny <- function( dataset = NA ) {
 
     })
 
-    #mpg_reactive <- reactive({
-    #  get("mpg")
-    #})
-
     # *** Read in data matrix ***
     df_shiny <- reactive({
       if (input$data_input == 1){
@@ -283,21 +285,21 @@ ggplot_shiny <- function( dataset = NA ) {
         file_in <- input$upload
         # Avoid error message while file is not uploaded yet
         if (is.null(input$upload))  {return(NULL)}
-        # Get the separator
-        mySep <- switch(input$fileSepDF, '1' = ",", '2' = "\t", '3' = ";", '4' = "") #list("Comma"=1,"Tab"=2,"Semicolon"=3)
-        data <- read.table(file_in$datapath, sep = mySep, header = TRUE, fill = TRUE)
-      } else if (input$data_input == 3) { # To be looked into again - for special case when last column has empty entries in some rows
-        if (is.null(input$myData)) {return(NULL)}
-        tmp <- matrix(strsplit(input$myData, "\n")[[1]])
-        mySep <- switch(input$fileSepP, '1' = ",",'2' = "\t",'3' = ";")
-        myColnames <- strsplit(tmp[1], mySep)[[1]]
-        data <- matrix(0, length(tmp)-1, length(myColnames))
-        colnames(data) <- myColnames
-        for(i in 2:length(tmp)){
-          myRow <- as.numeric(strsplit(paste(tmp[i], mySep, mySep, sep = ""), mySep)[[1]])
-          data[i-1, ] <- myRow[-length(myRow)]
+          data <- read_delim(file_in$datapath, delim = input$upload_delim, col_names = TRUE)
+      } else if (input$data_input == 3) {
+        if (input$myData=="") {
+          data <- data.frame(x = "Copy your data into the textbox, select the appropriate delimiter, and press 'Submit data'")
+        } else {
+
+          if (input$submit_data_button == 0)
+            return(data.frame(x = "Press 'submit data' button"))
+
+          isolate({
+              data <- read_delim(input$myData, delim = input$text_delim, col_names = TRUE)
+            })
+
         }
-        data <- data.frame(data)
+
       } else if(input$data_input == 4){
         data <- dataset
       }
@@ -315,3 +317,4 @@ ggplot_shiny <- function( dataset = NA ) {
   }
   shinyApp(ui, server)
 }
+ggplot_shiny()
