@@ -80,9 +80,9 @@ ggplot_shiny <- function( dataset = NA ) {
                                    choices = c("Boxplot", "Violin", "Density", "Histogram", "Dot + Error", "Scatter"),
                                    selected = "Boxplot"),
                        selectInput("y_var", "Y-variable", choices = ""),
-                       conditionalPanel(condition = "input.Type=='Scatter'",
-                                        selectInput("x_var", "x-variable", choices = "")),
-                       selectInput("group", "Group", choices = ""),
+                       conditionalPanel(condition = "input.Type!='Density' && input.Type!='Histogram'",
+                                        selectInput("x_var", "X-variable", choices = "")),
+                       selectInput("group", "Group (or colour)", choices = ""),
                        selectInput("facet_row", "Facet Row", choices = ""),
                        selectInput("facet_col", "Facet Column", choices = ""),
                        conditionalPanel(condition = "input.Type == 'Boxplot' || input.Type == 'Violin' || input.Type == 'Dot + Error'",
@@ -150,16 +150,17 @@ ggplot_shiny <- function( dataset = NA ) {
   server <- function(input, output, session) {
 
     observe({
-      # nms <- names(df_shiny())
+      nms <- names(df_shiny())
       nms_cont <- names(Filter(function(x) is.integer(x) || is.numeric(x) || is.double(x), df_shiny())) # Make list of variables that are not factors
       nms_fact <- names(Filter(function(x) is.factor(x) || is.logical(x) || is.character(x), df_shiny())) # Make list of variables that are not factors
 
+      avail_all <- c("No groups" = ".", nms)
       avail_con <- if (identical(nms_cont, character(0))) c("No continuous vars available" = ".") else c(nms_cont)
       avail_fac <- if (identical(nms_fact, character(0))) c("No factors available" = ".") else c("No groups" = ".", nms_fact)
 
       updateSelectInput(session, "y_var", choices = avail_con)
-      updateSelectInput(session, "x_var", choices = avail_con)
-      updateSelectInput(session, "group", choices = avail_fac)
+      updateSelectInput(session, "x_var", choices = c("No x-var" = "' '", nms))
+      updateSelectInput(session, "group", choices = avail_all)
       updateSelectInput(session, "facet_row",  choices = avail_fac)
       updateSelectInput(session, "facet_col",  choices = avail_fac)
     })
@@ -180,23 +181,23 @@ ggplot_shiny <- function( dataset = NA ) {
         }
       } else if (input$Type == "Boxplot") {
         if (input$group != ".") {
-          p <- "ggplot(df, aes(y = input$y_var, x = input$group)) + geom_boxplot()"
+          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var, colour = input$group)) + geom_boxplot()"
         } else if (input$group == ".") {
-          p <- "ggplot(df, aes(y = input$y_var, x = ' ')) + geom_boxplot()"
+          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var)) + geom_boxplot()"
         }
         if (input$jitter) p <- paste(p, "+", "geom_jitter(size = 1, alpha = 0.5, width = 0.25, colour = 'black')")
       } else if (input$Type == "Violin") {
         if (input$group != ".") {
-          p <- "ggplot(df, aes(y = input$y_var, x = input$group)) + geom_violin(adjust = input$bw_adjust)"
+          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var, colour = input$group)) + geom_violin(adjust = input$bw_adjust)"
         } else if (input$group == ".") {
-          p <- "ggplot(df, aes(y = input$y_var, x = ' ')) + geom_violin(adjust = input$bw_adjust)"
+          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var)) + geom_violin(adjust = input$bw_adjust)"
         }
         if (input$jitter) p <- paste(p, "+", "geom_jitter(size = 1, alpha = 0.5, width = 0.25, colour = 'black')")
       } else if (input$Type == "Dot + Error") {
         if (input$group != ".") {
-          p <- "ggplot(df, aes(y = input$y_var, x = input$group)) + geom_point(stat = 'summary', fun.y = 'mean') + geom_errorbar(stat = 'summary', fun.data = 'mean_se', width=0, fun.args = list(mult = 1.96))"
+          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var, colour = input$group)) + geom_point(stat = 'summary', fun.y = 'mean') + geom_errorbar(stat = 'summary', fun.data = 'mean_se', width=0, fun.args = list(mult = 1.96))"
         } else if (input$group == ".") {
-          p <- "ggplot(df, aes(y = input$y_var, x = ' ')) + geom_point(stat = 'summary', fun.y = 'mean') + geom_errorbar(stat = 'summary', fun.data = 'mean_se', width=0, fun.args = list(mult = 1.96))"
+          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var)) + geom_point(stat = 'summary', fun.y = 'mean') + geom_errorbar(stat = 'summary', fun.data = 'mean_se', width=0, fun.args = list(mult = 1.96))"
         }
         if (input$jitter) p <- paste(p, "+", "geom_jitter(size = 1, alpha = 0.2, width = 0.25, colour = 'black')")
       } else if (input$Type == "Scatter") {
