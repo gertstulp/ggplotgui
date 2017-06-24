@@ -18,10 +18,8 @@
 ggplot_shiny <- function( dataset = NA ) {
 
   ui <- fluidPage(
-
     headerPanel("ggplot GUI"),
-
-    sidebarPanel(
+    sidebarPanel(width = 3,
       conditionalPanel(condition = "input.tabs=='Data upload'",
                        h4("Enter data"),
                        radioButtons( "data_input", "",
@@ -75,7 +73,6 @@ ggplot_shiny <- function( dataset = NA ) {
                                                     selected = "Semicolon")
                        )
         ),
-
       conditionalPanel(condition = "input.tabs=='ggplot' || input.tabs=='Plotly'",
                        h4("Create visualization"),
                        selectInput(inputId = "Type",
@@ -131,20 +128,23 @@ ggplot_shiny <- function( dataset = NA ) {
                                         h4("R-code to build graph")
                         )
       ),
-  mainPanel(
-    tabsetPanel(type = "tabs",
-                # Data upload tab
-                tabPanel("Data upload", dataTableOutput("out_table"),
-                         h6("This application was created by ", a("Gert Stulp", href = "http://www.gertstulp.com/"), ".
-                            Please send bugs and feature requests to g.stulp(at)rug.nl. This application uses the ",
-                            a("shiny package from RStudio", href = "http://www.rstudio.com/shiny/"), ".")
-                ),
-                tabPanel("ggplot", plotOutput("out_ggplot")),
-                tabPanel("Plotly", plotlyOutput("out_plotly")),
-                tabPanel("R-code", verbatimTextOutput("out_r_code")),
-                id = "tabs"
-                )
-    )
+    mainPanel(width = 6,
+      tabsetPanel(type = "tabs",
+                  # Data upload tab
+                  tabPanel("Data upload", dataTableOutput("out_table"),
+                           h6("This application was created by ", a("Gert Stulp", href = "http://www.gertstulp.com/"), ".
+                              Please send bugs and feature requests to g.stulp(at)rug.nl. This application uses the ",
+                              a("shiny package from RStudio", href = "http://www.rstudio.com/shiny/"), ".")
+                  ),
+                  tabPanel("ggplot", plotOutput("out_ggplot")),
+                  tabPanel("Plotly", plotlyOutput("out_plotly")),
+                  tabPanel("R-code", verbatimTextOutput("out_r_code")),
+                  id = "tabs"
+                  )
+      ),
+    conditionalPanel(condition = "input.tabs=='ggplot' || input.tabs=='Plotly'",
+                     sidebarPanel(width = 3,
+                     h4("Change aesthetics")))
   )
 
   server <- function(input, output, session) {
@@ -184,21 +184,21 @@ ggplot_shiny <- function( dataset = NA ) {
         } else if (input$group == ".") {
           p <- "ggplot(df, aes(y = input$y_var, x = ' ')) + geom_boxplot()"
         }
-        if (input$jitter) p <- paste(p, "+", "geom_jitter(size = 1, alpha = 0.5, width = 0.25, colour = 'blue')")
+        if (input$jitter) p <- paste(p, "+", "geom_jitter(size = 1, alpha = 0.5, width = 0.25, colour = 'black')")
       } else if (input$Type == "Violin") {
         if (input$group != ".") {
           p <- "ggplot(df, aes(y = input$y_var, x = input$group)) + geom_violin(adjust = input$bw_adjust)"
         } else if (input$group == ".") {
           p <- "ggplot(df, aes(y = input$y_var, x = ' ')) + geom_violin(adjust = input$bw_adjust)"
         }
-        if (input$jitter) p <- paste(p, "+", "geom_jitter(size = 1, alpha = 0.5, width = 0.25, colour = 'blue')")
+        if (input$jitter) p <- paste(p, "+", "geom_jitter(size = 1, alpha = 0.5, width = 0.25, colour = 'black')")
       } else if (input$Type == "Dot + Error") {
         if (input$group != ".") {
           p <- "ggplot(df, aes(y = input$y_var, x = input$group)) + geom_point(stat = 'summary', fun.y = 'mean') + geom_errorbar(stat = 'summary', fun.data = 'mean_se', width=0, fun.args = list(mult = 1.96))"
         } else if (input$group == ".") {
           p <- "ggplot(df, aes(y = input$y_var, x = ' ')) + geom_point(stat = 'summary', fun.y = 'mean') + geom_errorbar(stat = 'summary', fun.data = 'mean_se', width=0, fun.args = list(mult = 1.96))"
         }
-        if (input$jitter) p <- paste(p, "+", "geom_jitter(size = 1, alpha = 0.2, width = 0.25, colour = 'blue')")
+        if (input$jitter) p <- paste(p, "+", "geom_jitter(size = 1, alpha = 0.2, width = 0.25, colour = 'black')")
       } else if (input$Type == "Scatter") {
         if (input$group != ".") {
           p <- "ggplot(df, aes(x = input$x_var, y = input$y_var, colour = input$group)) + geom_point()"
