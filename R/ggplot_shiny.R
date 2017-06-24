@@ -113,19 +113,10 @@ ggplot_shiny <- function( dataset = NA ) {
                                                         label = strong("Show confidence interval"),
                                                         value = FALSE)
                          )
-                       ),
-                       checkboxInput(inputId = "label_axes",
-                                     label = strong("Change labels axes"),
-                                     value = FALSE),
-                       conditionalPanel(condition = "input.label_axes == true",
-                                        textInput("lab_x", "X-axis:", value = "label x-axis")
-                       ),
-                       conditionalPanel(condition = "input.label_axes == true",
-                                        textInput("lab_y", "Y-axis:", value = "label y-axis")
                        )
         ),
         conditionalPanel(condition = "input.tabs=='R-code'",
-                                        h4("R-code to build graph")
+                           h4("R-code to build graph")
                         )
       ),
     mainPanel(width = 6,
@@ -143,9 +134,27 @@ ggplot_shiny <- function( dataset = NA ) {
                   )
       ),
     conditionalPanel(condition = "input.tabs=='ggplot' || input.tabs=='Plotly'",
-                     sidebarPanel(width = 3,
-                     h4("Change aesthetics")))
+                       sidebarPanel(width = 3,
+                       h4("Change aesthetics"),
+                       checkboxInput(inputId = "label_axes",
+                                     label = strong("Change labels axes"),
+                                     value = FALSE),
+                       conditionalPanel(condition = "input.label_axes == true",
+                                        textInput("lab_x", "X-axis:", value = "label x-axis")
+                       ),
+                       conditionalPanel(condition = "input.label_axes == true",
+                                        textInput("lab_y", "Y-axis:", value = "label y-axis")
+                       ),
+                       checkboxInput("fig_size", strong("Adjust plot size"), FALSE),
+                       conditionalPanel(condition="input.fig_size",
+                                        numericInput("fig_height", "Plot height:", value=550),
+                                        numericInput("fig_width", "Plot width:", value=750)
+                       )
+                       )
+                     )
   )
+
+
 
   server <- function(input, output, session) {
 
@@ -221,6 +230,8 @@ ggplot_shiny <- function( dataset = NA ) {
 
       p <- paste(p, "+ theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1))")
 
+      # ADD THEME CHOICE
+
       # Replace name of variables by values
       p <- str_replace_all(p, "input\\$y_var", input$y_var)
       p <- str_replace_all(p, "input\\$x_var", input$x_var)
@@ -234,7 +245,11 @@ ggplot_shiny <- function( dataset = NA ) {
       p
     })
 
-    output$out_ggplot <- renderPlot({
+    width <- reactive ({ input$fig_width })
+    height <- reactive ({ input$fig_height })
+
+    output$out_ggplot <- renderPlot(width = width,
+                                    height = height, {
 
       # evaluate the string RCode as code
       df <- df_shiny()
@@ -313,8 +328,6 @@ ggplot_shiny <- function( dataset = NA ) {
             }
           })
         }
-        #if (is.null(input$upload))  {return(data.frame(x = "Press 'submit data' button"))}
-        #  data <- read_delim(file_in$datapath, delim = input$upload_delim, col_names = TRUE)
       } else if (input$data_input == 3) {
         if (input$myData=="") {
           data <- data.frame(x = "Copy your data into the textbox, select the appropriate delimiter, and press 'Submit data'")
