@@ -147,13 +147,22 @@ ggplot_shiny <- function( dataset = NA ) {
                        ),
                        checkboxInput("fig_size", strong("Adjust plot size"), FALSE),
                        conditionalPanel(condition="input.fig_size",
-                                        numericInput("fig_height", "Plot height:", value=550),
-                                        numericInput("fig_width", "Plot width:", value=750)
-                       )
+                                        numericInput("fig_height", "Plot height:", value = 15),
+                                        numericInput("fig_width", "Plot width:", value = 17)
+                       ),
+                       selectInput("theme", "Theme",
+                                   choices = c("bw" = "theme_bw()",
+                                               "classic" = "theme_classic()",
+                                               "dark" = "theme_dark()",
+                                               "get" = "theme_get()",
+                                               "grey" = "theme_grey()",
+                                               "light" = "theme_light()",
+                                               "line_draw" = "theme_linedraw()",
+                                               "minimal" = "theme_minimal()"),
+                                   selected = "theme_bw()")
                        )
                      )
   )
-
 
 
   server <- function(input, output, session) {
@@ -228,7 +237,9 @@ ggplot_shiny <- function( dataset = NA ) {
       # if labels specified
       if (input$label_axes) p <- paste(p, "+", "labs(x = 'input$lab_x', y = 'input$lab_y')")
 
-      p <- paste(p, "+ theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1))")
+      p <- paste(p, "+", input$theme)
+
+      p <- paste(p, "+ theme(axis.text.x = element_text(angle = 45, hjust = 1))")
 
       # ADD THEME CHOICE
 
@@ -245,8 +256,9 @@ ggplot_shiny <- function( dataset = NA ) {
       p
     })
 
-    width <- reactive ({ input$fig_width })
-    height <- reactive ({ input$fig_height })
+    # Convert centimeters to pixels
+    width <- reactive ({ input$fig_width * (96 / 2.54) })
+    height <- reactive ({ input$fig_height * (96 / 2.54) })
 
     output$out_ggplot <- renderPlot(width = width,
                                     height = height, {
