@@ -7,6 +7,8 @@
 #' #ggplot_shiny(mpg)
 #' @import ggplot2
 #' @import shiny
+#' @import readxl
+#' @import haven
 #' @importFrom plotly ggplotly plotlyOutput renderPlotly
 #' @importFrom stringr str_replace_all
 #' @importFrom readr read_delim
@@ -25,7 +27,7 @@ ggplot_shiny <- function( dataset = NA ) {
                        radioButtons( "data_input", "",
                                     choices = if (is.data.frame(dataset)) {
                                       list("Load sample data" = 1,
-                                           "Upload file" = 2,
+                                           "Upload text file" = 2,
                                            "Paste data" = 3,
                                       "Data passed through R environment" = 4)
                                     } else {
@@ -38,18 +40,25 @@ ggplot_shiny <- function( dataset = NA ) {
                                         h5("dataset 'mpg' from library(ggplot2) loaded")
                        ),
                        conditionalPanel(condition = "input.data_input=='2'",
-                                        h5("Upload delimited text file: "),
+                                        h5("Upload file: "),
                                         fileInput("upload", "",
                                                   multiple = FALSE),
-                                        selectInput("upload_delim", "Delimiter:",
-                                                     list("Semicolon" = ";",
-                                                          "Tab" = "\t",
-                                                          "Comma" = ",",
-                                                          "Space" = " "),
-                                                    selected = "Semicolon"),
-                                        HTML('<p>Data in <a href="http://en.wikipedia.org/wiki/Delimiter-separated_values">delimited text files </a> can be separated by comma, tab or semicolon.
-                                             For example, Excel data can be exported in .csv (comma separated) or .tab (tab separated) format. </p>')
-                                        ),
+                                        selectInput("file_type", "Type of file:",
+                                                    list("text (csv)" = "text",
+                                                         "Excel" = "Excel",
+                                                         "SPSS" = "SPSS",
+                                                         "Stata" = "Stata",
+                                                         "SAS" = "SAS"),
+                                                    selected = "text"),
+                                        conditionalPanel(condition = "input.file_type=='text'",
+                                                         selectInput("upload_delim", "Delimiter:",
+                                                         list("Semicolon" = ";",
+                                                              "Tab" = "\t",
+                                                              "Comma" = ",",
+                                                              "Space" = " "),
+                                                          selected = "Semicolon")),
+                                        actionButton("submit_datafile_button",
+                                                     "Submit datafile")),
                        conditionalPanel(condition = "input.data_input=='3'",
                                         h5("Paste data below:"),
                                         tags$textarea(id = "myData",
@@ -209,7 +218,7 @@ ggplot_shiny <- function( dataset = NA ) {
       # if labels specified
       if (input$label_axes) p <- paste(p, "+", "labs(x = 'input$lab_x', y = 'input$lab_y')")
 
-      p <- paste(p, "+ theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))")
+      p <- paste(p, "+ theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1))")
 
       # Replace name of variables by values
       p <- str_replace_all(p, "input\\$y_var", input$y_var)
@@ -284,37 +293,49 @@ ggplot_shiny <- function( dataset = NA ) {
       } else if (input$data_input == 2){
         file_in <- input$upload
         # Avoid error message while file is not uploaded yet
-        if (is.null(input$upload))  {return(NULL)}
-          data <- read_delim(file_in$datapath, delim = input$upload_delim, col_names = TRUE)
+        if (is.null(input$upload)) {
+            return(data.frame(x = "Select your datafile"))
+        } else if (input$submit_datafile_button == 0) {
+            return(data.frame(x = "Press 'submit datafile' button"))
+        } else {
+          isolate({
+            if (input$file_type == "text") {
+              data <- read_delim(file_in$datapath, delim = input$text_delim, col_names = TRUE)
+            } else if (input$file_type == "Excel") {
+              data <- read_excel(file_in$datapath)
+            } else if (input$file_type == "SPSS") {
+              data <- read_sav(file_in$datapath)
+            } else if (input$file_type == "Stata") {
+              data <- read_dta(file_in$datapath)
+            } else if (input$file_type == "SAS") {
+              data <- read_sas(file_in$datapath)
+            }
+          })
+        }
+        #if (is.null(input$upload))  {return(data.frame(x = "Press 'submit data' button"))}
+        #  data <- read_delim(file_in$datapath, delim = input$upload_delim, col_names = TRUE)
       } else if (input$data_input == 3) {
         if (input$myData=="") {
           data <- data.frame(x = "Copy your data into the textbox, select the appropriate delimiter, and press 'Submit data'")
         } else {
-
-          if (input$submit_data_button == 0)
+          if (input$submit_data_button == 0) {
             return(data.frame(x = "Press 'submit data' button"))
-
-          isolate({
-              data <- read_delim(input$myData, delim = input$text_delim, col_names = TRUE)
-            })
-
+          } else {
+            isolate({
+                data <- read_delim(input$myData, delim = input$text_delim, col_names = TRUE)
+              })
+          }
         }
-
       } else if(input$data_input == 4){
-        data <- dataset
+          data <- dataset
       }
       return(data)
     })
 
-    ## *** Data in table ***
+    # Display data in table
     output$out_table <- renderDataTable(
-      #print(nrow(df_shiny()))
-      #if(nrow(df_shiny())<500){
-      #  return(df_shiny())
-      #} else {return(df_shiny()[1:100,])}
       df_shiny()
     )
   }
   shinyApp(ui, server)
 }
-ggplot_shiny()
