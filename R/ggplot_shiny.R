@@ -146,6 +146,8 @@ ggplot_shiny <- function( dataset = NA ) {
     conditionalPanel(condition = "input.tabs=='ggplot' || input.tabs=='Plotly'",
                        sidebarPanel(width = 3,
                        h4("Change aesthetics"),
+                       tabsetPanel(
+                         tabPanel("Text",
                        checkboxInput(inputId = "label_axes",
                                      label = strong("Change labels axes"),
                                      value = FALSE),
@@ -155,27 +157,42 @@ ggplot_shiny <- function( dataset = NA ) {
                        conditionalPanel(condition = "input.label_axes == true",
                                         textInput("lab_y", "Y-axis:", value = "label y-axis")
                        ),
-                       checkboxInput("fig_size", strong("Adjust plot size"), FALSE),
-                       conditionalPanel(condition="input.fig_size",
-                                        numericInput("fig_height", "Plot height:", value = 15),
-                                        numericInput("fig_width", "Plot width:", value = 17)
+                       checkboxInput(inputId = "add_title",
+                                     label = strong("Add title"),
+                                     value = FALSE),
+                       conditionalPanel(condition = "input.add_title == true",
+                                        textInput("title", "Title:", value = "Title")
                        ),
-                       selectInput("theme", "Theme",
-                                   choices = c("bw" = "theme_bw()",
-                                               "classic" = "theme_classic()",
-                                               "dark" = "theme_dark()",
-                                               "grey" = "theme_grey()",
-                                               "light" = "theme_light()",
-                                               "line_draw" = "theme_linedraw()",
-                                               "minimal" = "theme_minimal()"),
-                                   selected = "theme_bw()"),
-                     selectInput("font", "Font",
+                       checkboxInput(inputId = "change_font",
+                                     label = strong("Change font"),
+                                     value = FALSE),
+                       conditionalPanel(condition = "input.change_font == true",
+                                        selectInput("font", "Font",
                                  choices = c("Courier" = "Courier",
                                               "Helvetica" = "Helvetica",
                                               "Times" = "Times"),
-                                              selected = "Courier")
-                        )
+                                              selected = "Courier"))
+                        ),
+                     tabPanel("Theme",
+                              checkboxInput("fig_size", strong("Adjust plot size (# pixels)"), FALSE),
+                              conditionalPanel(condition="input.fig_size",
+                                               numericInput("fig_height", "Plot height:", value = 480),
+                                               numericInput("fig_width", "Plot width:", value = 480),
+                                               numericInput("fig_dpi", "Plot dpi:", value = 72)
+                              ),
+                              selectInput("theme", "Theme",
+                                          choices = c("bw" = "theme_bw()",
+                                                      "classic" = "theme_classic()",
+                                                      "dark" = "theme_dark()",
+                                                      "grey" = "theme_grey()",
+                                                      "light" = "theme_light()",
+                                                      "line_draw" = "theme_linedraw()",
+                                                      "minimal" = "theme_minimal()"),
+                                          selected = "theme_bw()"))
                      )
+                       )
+
+    )
   )
 
 
@@ -306,11 +323,21 @@ ggplot_shiny <- function( dataset = NA ) {
 
       # if labels specified
       if (input$label_axes) p <- paste(p, "+", "labs(x = 'input$lab_x', y = 'input$lab_y')")
+      # if title specified
+      if (input$add_title) p <- paste(p, "+", "ggtitle('input$title')")
+      # if legend specified
+      #if (input$add_lab_legend) p <- paste(p, "+", "guides(colour = 'input$lab_legend')")
 
       p <- paste(p, "+", input$theme)
 
-      p <- paste(p, "+ theme(text = element_text(family = 'input$font'),
-                 axis.text.x = element_text(angle = 45, hjust = 1))")
+      if (input$change_font) theme_font = "text = element_text(family = 'input$font')" else theme_font = ""
+
+      p <- paste(p, "+ theme(",
+                 theme_font,
+                 ")",
+                 sep = ""
+      )
+      #           axis.text.x = element_text(angle = 45, hjust = 1))")
 
       # ADD THEME CHOICE
 
@@ -323,6 +350,7 @@ ggplot_shiny <- function( dataset = NA ) {
       p <- str_replace_all(p, "input\\$alpha", as.character(input$alpha))
       p <- str_replace_all(p, "input\\$lab_x", as.character(input$lab_x))
       p <- str_replace_all(p, "input\\$lab_y", as.character(input$lab_y))
+      p <- str_replace_all(p, "input\\$title", as.character(input$title))
       p <- str_replace_all(p, "input\\$font", as.character(input$font))
 
 
@@ -339,11 +367,13 @@ ggplot_shiny <- function( dataset = NA ) {
     )
 
     # Convert centimeters to pixels
-    width <- reactive ({ input$fig_width * (96 / 2.54) })
-    height <- reactive ({ input$fig_height * (96 / 2.54) })
+    width <- reactive ({ input$fig_width })
+    height <- reactive ({ input$fig_height })
+    dpi_f <- reactive ({ as.numeric(input$fig_dpi) })
 
     output$out_ggplot <- renderPlot(width = width,
-                                    height = height, {
+                                    height = height,
+                                    {
 
       # evaluate the string RCode as code
       df <- df_shiny()
@@ -402,3 +432,4 @@ ggplot_shiny <- function( dataset = NA ) {
   }
   shinyApp(ui, server)
 }
+ggplot_shiny()
