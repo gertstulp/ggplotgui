@@ -77,8 +77,8 @@ ggplot_shiny <- function( dataset = NA ) {
                        h4("Create visualization"),
                        selectInput(inputId = "Type",
                                    label = "Type of graph:",
-                                   choices = c("Boxplot", "Violin", "Density", "Histogram", "Dot + Error", "Scatter"),
-                                   selected = "Boxplot"),
+                                   choices = c("Boxplot", "Density", "Dot + Error", "Dotplot", "Histogram", "Scatter", "Violin"),
+                                   selected = "Violin"),
                        selectInput("y_var", "Y-variable", choices = ""),
                        conditionalPanel(condition = "input.Type!='Density' && input.Type!='Histogram'",
                                         selectInput("x_var", "X-variable", choices = "")),
@@ -96,10 +96,18 @@ ggplot_shiny <- function( dataset = NA ) {
                                                       value = FALSE)
                        ),
                        conditionalPanel(condition = "input.Type == 'Density' || input.Type == 'Histogram'",
-                                        sliderInput("alpha", "Opaqueness:", min = 0, max = 1, value = 0.8)
+                                        sliderInput("alpha", "Opacity:", min = 0, max = 1, value = 0.8)
                        ),
-                       conditionalPanel(condition = "input.Type == 'Histogram'",
+                       conditionalPanel(condition = "input.Type == 'Histogram' || input.Type=='Dotplot'",
                                         numericInput("binwidth", "Binwidth:", value = 1)
+                       ),
+                       conditionalPanel(condition = "input.Type == 'Dotplot'",
+                                        selectInput("dot_dir", "Direction stack:",
+                                                    choice = c("up",
+                                                         "down",
+                                                         "center",
+                                                         "centerwhole"),
+                                                    selected = "up")
                        ),
                        conditionalPanel(condition = "input.Type == 'Density' || input.Type == 'Violin'",
                                         sliderInput(inputId = "bw_adjust",
@@ -182,9 +190,9 @@ ggplot_shiny <- function( dataset = NA ) {
                                      value = FALSE),
                        conditionalPanel(condition = "input.change_font == true",
                                         selectInput("font", "Font",
-                                 choices = c("Courier" = "Courier",
-                                              "Helvetica" = "Helvetica",
-                                              "Times" = "Times"),
+                                 choices = c("Courier",
+                                              "Helvetica",
+                                              "Times"),
                                               selected = "Helvetica"))
                         ),
                      tabPanel("Theme",
@@ -318,6 +326,12 @@ ggplot_shiny <- function( dataset = NA ) {
         } else if (input$group == ".") {
           p <- "ggplot(df, aes(y = input$y_var, x = input$x_var)) + geom_violin(adjust = input$bw_adjust)"
         }
+      } else if (input$Type == "Dotplot") {
+        if (input$group != ".") {
+          p <- "ggplot(df, aes(x = input$x_var, y = input$y_var, fill = input$group)) + geom_dotplot(binaxis = 'y', binwidth = input$binwidth, stackdir = 'input$dot_dir')"
+        } else if (input$group == ".") {
+          p <- "ggplot(df, aes(x = input$x_var, y = input$y_var)) + geom_dotplot(binaxis = 'y', binwidth = input$binwidth, stackdir = 'input$dot_dir')"
+        }
         if (input$jitter) p <- paste(p, "+", "geom_jitter(size = 1, alpha = 0.5, width = 0.25, colour = 'black')")
       } else if (input$Type == "Dot + Error") {
         if (input$group != ".") {
@@ -372,6 +386,7 @@ ggplot_shiny <- function( dataset = NA ) {
       p <- str_replace_all(p, "input\\$notch", as.character(input$notch))
       p <- str_replace_all(p, "input\\$binwidth", as.character(input$binwidth))
       p <- str_replace_all(p, "input\\$bw_adjust", as.character(input$bw_adjust))
+      p <- str_replace_all(p, "input\\$dot_dir", as.character(input$dot_dir))
       p <- str_replace_all(p, "input\\$alpha", as.character(input$alpha))
       p <- str_replace_all(p, "input\\$lab_x", as.character(input$lab_x))
       p <- str_replace_all(p, "input\\$lab_y", as.character(input$lab_y))
