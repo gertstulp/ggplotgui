@@ -349,17 +349,16 @@ ggplot_shiny <- function( dataset = NA ) {
       if (input$change_font_size) theme_axis_title = "axis.title = element_text(size = input$font_size_titles)" else theme_axis_title = ""
       if (input$change_font_size) theme_axis_text = "axis.text = element_text(size = input$font_size_axes)" else theme_axis_text = ""
       if (input$change_font) theme_font = "text = element_text(family = 'input$font')" else theme_font = ""
-
-      # rotate_text_x
+      if (input$rotate_text_x) theme_rotate = "axis.text.x = element_text(angle = 45, hjust = 1)" else theme_rotate = ""
 
       p <- paste(p, " + theme(\n    ",
                  theme_axis_title, ",\n    ",
                  theme_axis_text, ",\n    ",
+                 theme_rotate, ",\n    ",
                  theme_font, ",\n",
                  "  )",
                  sep = ""
       )
-      #           axis.text.x = element_text(angle = 45, hjust = 1))")
 
       # Replace name of variables by values
       p <- str_replace_all(p, "input\\$y_var", input$y_var)
