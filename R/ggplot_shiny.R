@@ -90,6 +90,11 @@ ggplot_shiny <- function( dataset = NA ) {
                                                       label = strong("Show data points (jittered)"),
                                                       value = FALSE)
                        ),
+                       conditionalPanel(condition = "input.Type == 'Boxplot'",
+                                        checkboxInput(inputId = "notch",
+                                                      label = strong("Notched box plot"),
+                                                      value = FALSE)
+                       ),
                        conditionalPanel(condition = "input.Type == 'Density' || input.Type == 'Histogram'",
                                         sliderInput("alpha", "Opaqueness:", min = 0, max = 1, value = 0.8)
                        ),
@@ -302,9 +307,9 @@ ggplot_shiny <- function( dataset = NA ) {
         }
       } else if (input$Type == "Boxplot") {
         if (input$group != ".") {
-          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var, colour = input$group)) + geom_boxplot()"
+          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var, colour = input$group)) + geom_boxplot(notch = input$notch)"
         } else if (input$group == ".") {
-          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var)) + geom_boxplot()"
+          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var)) + geom_boxplot(notch = input$notch)"
         }
         if (input$jitter) p <- paste(p, "+", "geom_jitter(size = 1, alpha = 0.5, width = 0.25, colour = 'black')")
       } else if (input$Type == "Violin") {
@@ -364,6 +369,7 @@ ggplot_shiny <- function( dataset = NA ) {
       p <- str_replace_all(p, "input\\$y_var", input$y_var)
       p <- str_replace_all(p, "input\\$x_var", input$x_var)
       p <- str_replace_all(p, "input\\$group", input$group)
+      p <- str_replace_all(p, "input\\$notch", as.character(input$notch))
       p <- str_replace_all(p, "input\\$binwidth", as.character(input$binwidth))
       p <- str_replace_all(p, "input\\$bw_adjust", as.character(input$bw_adjust))
       p <- str_replace_all(p, "input\\$alpha", as.character(input$alpha))
