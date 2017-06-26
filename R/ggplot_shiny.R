@@ -163,6 +163,15 @@ ggplot_shiny <- function( dataset = NA ) {
                        conditionalPanel(condition = "input.add_title == true",
                                         textInput("title", "Title:", value = "Title")
                        ),
+                       checkboxInput(inputId = "change_font_size",
+                                     label = strong("Change font size"),
+                                     value = FALSE),
+                       conditionalPanel(condition = "input.change_font_size == true",
+                                        numericInput("font_size_titles", "Size axis titles:", value = 12),
+                                        numericInput("font_size_axes", "Size axis labels:", value = 10)),
+                       checkboxInput(inputId = "rotate_text_x",
+                                     label = strong("Rotate text x-axis"),
+                                     value = FALSE),
                        checkboxInput(inputId = "change_font",
                                      label = strong("Change font"),
                                      value = FALSE),
@@ -171,7 +180,7 @@ ggplot_shiny <- function( dataset = NA ) {
                                  choices = c("Courier" = "Courier",
                                               "Helvetica" = "Helvetica",
                                               "Times" = "Times"),
-                                              selected = "Courier"))
+                                              selected = "Helvetica"))
                         ),
                      tabPanel("Theme",
                               checkboxInput("fig_size", strong("Adjust plot size (# pixels)"), FALSE),
@@ -188,7 +197,14 @@ ggplot_shiny <- function( dataset = NA ) {
                                                       "light" = "theme_light()",
                                                       "line_draw" = "theme_linedraw()",
                                                       "minimal" = "theme_minimal()"),
-                                          selected = "theme_bw()"))
+                                          selected = "theme_bw()")),
+                     tabPanel("Legend",
+                              conditionalPanel(condition="input.group != '.'",
+                                               checkboxInput(inputId = "change_legend",
+                                                             label = strong("Legend stuff"),
+                                                             value = FALSE)
+                                      )
+                     )
                      )
                        )
 
@@ -330,16 +346,20 @@ ggplot_shiny <- function( dataset = NA ) {
 
       p <- paste(p, "+", input$theme)
 
+      if (input$change_font_size) theme_axis_title = "axis.title = element_text(size = input$font_size_titles)" else theme_axis_title = ""
+      if (input$change_font_size) theme_axis_text = "axis.text = element_text(size = input$font_size_axes)" else theme_axis_text = ""
       if (input$change_font) theme_font = "text = element_text(family = 'input$font')" else theme_font = ""
 
-      p <- paste(p, "+ theme(",
-                 theme_font,
-                 ")",
+      # rotate_text_x
+
+      p <- paste(p, " + theme(\n    ",
+                 theme_axis_title, ",\n    ",
+                 theme_axis_text, ",\n    ",
+                 theme_font, ",\n",
+                 "  )",
                  sep = ""
       )
       #           axis.text.x = element_text(angle = 45, hjust = 1))")
-
-      # ADD THEME CHOICE
 
       # Replace name of variables by values
       p <- str_replace_all(p, "input\\$y_var", input$y_var)
@@ -351,8 +371,11 @@ ggplot_shiny <- function( dataset = NA ) {
       p <- str_replace_all(p, "input\\$lab_x", as.character(input$lab_x))
       p <- str_replace_all(p, "input\\$lab_y", as.character(input$lab_y))
       p <- str_replace_all(p, "input\\$title", as.character(input$title))
+      p <- str_replace_all(p, "input\\$font_size_titles", as.character(input$font_size_titles))
+      p <- str_replace_all(p, "input\\$font_size_axes", as.character(input$font_size_axes))
       p <- str_replace_all(p, "input\\$font", as.character(input$font))
-
+      p <- str_replace_all(p, "    ,\n", "")
+      p <- str_replace_all(p, "\\),\n  \\)", "\\)\n  \\)")
 
       p
     })
