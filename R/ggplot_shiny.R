@@ -119,6 +119,11 @@ ggplot_shiny <- function( dataset = NA ) {
                            h4("R-code to build graph")
                         )
       ),
+
+    #####################################
+    ########### OUPUT TABS ##############
+    #####################################
+
     mainPanel(width = 6,
       tabsetPanel(type = "tabs",
                   # Data upload tab
@@ -133,6 +138,11 @@ ggplot_shiny <- function( dataset = NA ) {
                   id = "tabs"
                   )
       ),
+
+    #####################################
+    ######### AESTHETICS TAB ############
+    #####################################
+
     conditionalPanel(condition = "input.tabs=='ggplot' || input.tabs=='Plotly'",
                        sidebarPanel(width = 3,
                        h4("Change aesthetics"),
@@ -154,18 +164,26 @@ ggplot_shiny <- function( dataset = NA ) {
                                    choices = c("bw" = "theme_bw()",
                                                "classic" = "theme_classic()",
                                                "dark" = "theme_dark()",
-                                               "get" = "theme_get()",
                                                "grey" = "theme_grey()",
                                                "light" = "theme_light()",
                                                "line_draw" = "theme_linedraw()",
                                                "minimal" = "theme_minimal()"),
-                                   selected = "theme_bw()")
-                       )
+                                   selected = "theme_bw()"),
+                     selectInput("font", "Font",
+                                 choices = c("Courier" = "Courier",
+                                              "Helvetica" = "Helvetica",
+                                              "Times" = "Times"),
+                                              selected = "Courier")
+                        )
                      )
   )
 
 
   server <- function(input, output, session) {
+
+#####################################
+### GET VARIABLE NAMES FOR INPUT ####
+#####################################
 
     observe({
       nms <- names(df_shiny())
@@ -182,6 +200,58 @@ ggplot_shiny <- function( dataset = NA ) {
       updateSelectInput(session, "facet_row",  choices = avail_fac)
       updateSelectInput(session, "facet_col",  choices = avail_fac)
     })
+
+
+#####################################
+###### READ IN / GET DATA ###########
+#####################################
+
+    df_shiny <- reactive({
+      if (input$data_input == 1) {
+        data <- get("mpg")
+      } else if (input$data_input == 2) {
+        file_in <- input$upload
+        # Avoid error message while file is not uploaded yet
+        if (is.null(input$upload)) {
+          return(data.frame(x = "Select your datafile"))
+        } else if (input$submit_datafile_button == 0) {
+          return(data.frame(x = "Press 'submit datafile' button"))
+        } else {
+          isolate({
+            if (input$file_type == "text") {
+              data <- read_delim(file_in$datapath, delim = input$text_delim, col_names = TRUE)
+            } else if (input$file_type == "Excel") {
+              data <- read_excel(file_in$datapath)
+            } else if (input$file_type == "SPSS") {
+              data <- read_sav(file_in$datapath)
+            } else if (input$file_type == "Stata") {
+              data <- read_dta(file_in$datapath)
+            } else if (input$file_type == "SAS") {
+              data <- read_sas(file_in$datapath)
+            }
+          })
+        }
+      } else if (input$data_input == 3) {
+        if (input$myData=="") {
+          data <- data.frame(x = "Copy your data into the textbox, select the appropriate delimiter, and press 'Submit data'")
+        } else {
+          if (input$submit_data_button == 0) {
+            return(data.frame(x = "Press 'submit data' button"))
+          } else {
+            isolate({
+              data <- read_delim(input$myData, delim = input$text_delim, col_names = TRUE)
+            })
+          }
+        }
+      } else if(input$data_input == 4){
+        data <- dataset
+      }
+      return(data)
+    })
+
+#####################################
+####### CREATE GRAPH-CODE ###########
+#####################################
 
     string_code <- reactive({
 
@@ -239,7 +309,8 @@ ggplot_shiny <- function( dataset = NA ) {
 
       p <- paste(p, "+", input$theme)
 
-      p <- paste(p, "+ theme(axis.text.x = element_text(angle = 45, hjust = 1))")
+      p <- paste(p, "+ theme(text = element_text(family = 'input$font'),
+                 axis.text.x = element_text(angle = 45, hjust = 1))")
 
       # ADD THEME CHOICE
 
@@ -252,9 +323,20 @@ ggplot_shiny <- function( dataset = NA ) {
       p <- str_replace_all(p, "input\\$alpha", as.character(input$alpha))
       p <- str_replace_all(p, "input\\$lab_x", as.character(input$lab_x))
       p <- str_replace_all(p, "input\\$lab_y", as.character(input$lab_y))
+      p <- str_replace_all(p, "input\\$font", as.character(input$font))
+
 
       p
     })
+
+
+#####################################
+###### GRAPHICAL/TABLE OUTPUT #######
+#####################################
+
+    output$out_table <- renderDataTable(
+      df_shiny()
+    )
 
     # Convert centimeters to pixels
     width <- reactive ({ input$fig_width * (96 / 2.54) })
@@ -281,7 +363,10 @@ ggplot_shiny <- function( dataset = NA ) {
 
     })
 
-    # Give the R-code as output
+#####################################
+#### GENERATE R-CODE FOR OUTPUT #####
+#####################################
+
     output$out_r_code <- renderText({
 
       begin_text <- "# You can use the below code to generate the graph\n# Don't forget to replace the 'df' with the name of your dataframe"
@@ -314,54 +399,6 @@ ggplot_shiny <- function( dataset = NA ) {
 
     })
 
-    # *** Read in data matrix ***
-    df_shiny <- reactive({
-      if (input$data_input == 1){
-        data <- get("mpg")
-      } else if (input$data_input == 2){
-        file_in <- input$upload
-        # Avoid error message while file is not uploaded yet
-        if (is.null(input$upload)) {
-            return(data.frame(x = "Select your datafile"))
-        } else if (input$submit_datafile_button == 0) {
-            return(data.frame(x = "Press 'submit datafile' button"))
-        } else {
-          isolate({
-            if (input$file_type == "text") {
-              data <- read_delim(file_in$datapath, delim = input$text_delim, col_names = TRUE)
-            } else if (input$file_type == "Excel") {
-              data <- read_excel(file_in$datapath)
-            } else if (input$file_type == "SPSS") {
-              data <- read_sav(file_in$datapath)
-            } else if (input$file_type == "Stata") {
-              data <- read_dta(file_in$datapath)
-            } else if (input$file_type == "SAS") {
-              data <- read_sas(file_in$datapath)
-            }
-          })
-        }
-      } else if (input$data_input == 3) {
-        if (input$myData=="") {
-          data <- data.frame(x = "Copy your data into the textbox, select the appropriate delimiter, and press 'Submit data'")
-        } else {
-          if (input$submit_data_button == 0) {
-            return(data.frame(x = "Press 'submit data' button"))
-          } else {
-            isolate({
-                data <- read_delim(input$myData, delim = input$text_delim, col_names = TRUE)
-              })
-          }
-        }
-      } else if(input$data_input == 4){
-          data <- dataset
-      }
-      return(data)
-    })
-
-    # Display data in table
-    output$out_table <- renderDataTable(
-      df_shiny()
-    )
   }
   shinyApp(ui, server)
 }
