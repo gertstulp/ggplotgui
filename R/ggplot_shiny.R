@@ -9,6 +9,7 @@
 #' @import shiny
 #' @import readxl
 #' @import haven
+#' @import RColorBrewer
 #' @importFrom plotly ggplotly plotlyOutput renderPlotly
 #' @importFrom stringr str_replace_all
 #' @importFrom readr read_delim
@@ -196,6 +197,64 @@ ggplot_shiny <- function( dataset = NA ) {
                                               selected = "Helvetica"))
                         ),
                      tabPanel("Theme",
+                              conditionalPanel(condition="input.group != '.'",
+                                               checkboxInput(inputId = "change_colour",
+                                                             label = strong("Change colours"),
+                                                             value = FALSE),
+                                 conditionalPanel(condition="input.change_colour",
+                                                  selectInput(inputId = "palette",
+                                                                label = strong("Select palette"),
+                                                                choices = list(
+                                                                  "Qualitative" = c("Accent",
+                                                                                    "Dark2",
+                                                                                    "Paired",
+                                                                                    "Pastel1",
+                                                                                    "Pastel2",
+                                                                                    "Set1",
+                                                                                    "Set2",
+                                                                                    "Set3"),
+                                                                  "Diverging" = c("BrBG",
+                                                                                  "PiYG",
+                                                                                  "PRGn",
+                                                                                  "PuOr",
+                                                                                  "RdBu",
+                                                                                  "RdGy",
+                                                                                  "RdYlBu",
+                                                                                  "RdYlGn",
+                                                                                  "Spectral"),
+                                                                  "Sequential" = c("Blues",
+                                                                                   "BuGn",
+                                                                                   "BuPu",
+                                                                                   "GnBu",
+                                                                                   "Greens",
+                                                                                   "Greys",
+                                                                                   "Oranges",
+                                                                                   "OrRd",
+                                                                                   "PuBu",
+                                                                                   "PuBuGn",
+                                                                                   "PuRd",
+                                                                                   "Purples",
+                                                                                   "RdPu",
+                                                                                   "Reds",
+                                                                                   "YlGn",
+                                                                                   "YlGnBu",
+                                                                                   "YlOrBr",
+                                                                                   "YlOrRd")),
+                                                                selected = "set1")
+
+                              )
+                              ),
+                              conditionalPanel(condition="input.jitter",
+                                checkboxInput("change_jitter", strong("Change look jitter"), FALSE),
+                                conditionalPanel(condition="input.change_jitter",
+                                                 textInput("col_jitter", "Colour:", value = "black"),
+                                                 numericInput("size_jitter", "Size:", value = 1),
+                                                 sliderInput("opac_jitter", "Opacity:",
+                                                             min = 0, max = 1, value = 0.5, step = 0.01),
+                                                 sliderInput("width_jitter", "Width jitter:",
+                                                             min = 0, max = 1, value = 0.25, step = 0.01)
+                                )
+                              ),
                               checkboxInput("fig_size", strong("Adjust plot size (# pixels)"), FALSE),
                               conditionalPanel(condition="input.fig_size",
                                                numericInput("fig_height", "Plot height:", value = 480),
@@ -326,20 +385,20 @@ ggplot_shiny <- function( dataset = NA ) {
         } else if (input$group == ".") {
           p <- "ggplot(df, aes(y = input$y_var, x = input$x_var)) + geom_violin(adjust = input$bw_adjust)"
         }
+        if (input$jitter) p <- paste(p, "+", "geom_jitter(size = 1, alpha = 0.5, width = 0.25, colour = 'black')")
       } else if (input$Type == "Dotplot") {
         if (input$group != ".") {
           p <- "ggplot(df, aes(x = input$x_var, y = input$y_var, fill = input$group)) + geom_dotplot(binaxis = 'y', binwidth = input$binwidth, stackdir = 'input$dot_dir')"
         } else if (input$group == ".") {
           p <- "ggplot(df, aes(x = input$x_var, y = input$y_var)) + geom_dotplot(binaxis = 'y', binwidth = input$binwidth, stackdir = 'input$dot_dir')"
         }
-        if (input$jitter) p <- paste(p, "+", "geom_jitter(size = 1, alpha = 0.5, width = 0.25, colour = 'black')")
       } else if (input$Type == "Dot + Error") {
         if (input$group != ".") {
           p <- "ggplot(df, aes(y = input$y_var, x = input$x_var, colour = input$group)) + geom_point(stat = 'summary', fun.y = 'mean') + geom_errorbar(stat = 'summary', fun.data = 'mean_se', width=0, fun.args = list(mult = 1.96))"
         } else if (input$group == ".") {
           p <- "ggplot(df, aes(y = input$y_var, x = input$x_var)) + geom_point(stat = 'summary', fun.y = 'mean') + geom_errorbar(stat = 'summary', fun.data = 'mean_se', width=0, fun.args = list(mult = 1.96))"
         }
-        if (input$jitter) p <- paste(p, "+", "geom_jitter(size = 1, alpha = 0.2, width = 0.25, colour = 'black')")
+        if (input$jitter) p <- paste(p, "+", "geom_jitter(size = input$size_jitter, alpha = input$opac_jitter, width = input$width_jitter, colour = 'input$col_jitter')")
       } else if (input$Type == "Scatter") {
         if (input$group != ".") {
           p <- "ggplot(df, aes(x = input$x_var, y = input$y_var, colour = input$group)) + geom_point()"
@@ -362,6 +421,14 @@ ggplot_shiny <- function( dataset = NA ) {
       if (input$add_title) p <- paste(p, "+", "ggtitle('input$title')")
       # if legend specified
       #if (input$add_lab_legend) p <- paste(p, "+", "guides(colour = 'input$lab_legend')")
+      # if colour legend specified
+      if (input$change_colour) {
+        if (input$Type == "Histogram" || input$Type == "Density" || input$Type == "Dotplot") {
+          p <- paste(p, "+ scale_fill_brewer(palette = 'input$palette')")
+        } else {
+          p <- paste(p, "+ scale_colour_brewer(palette = 'input$palette')")
+        }
+      }
 
       p <- paste(p, "+", input$theme)
 
@@ -370,14 +437,18 @@ ggplot_shiny <- function( dataset = NA ) {
       if (input$change_font) theme_font = "text = element_text(family = 'input$font')" else theme_font = ""
       if (input$rotate_text_x) theme_rotate = "axis.text.x = element_text(angle = 45, hjust = 1)" else theme_rotate = ""
 
-      p <- paste(p, " + theme(\n    ",
-                 theme_axis_title, ",\n    ",
-                 theme_axis_text, ",\n    ",
-                 theme_rotate, ",\n    ",
-                 theme_font, ",\n",
-                 "  )",
-                 sep = ""
-      )
+      if (input$change_font_size ||
+          input$change_font ||
+          input$rotate_text_x) {
+        p <- paste(p, " + theme(\n    ",
+                   theme_axis_title, ",\n    ",
+                   theme_axis_text, ",\n    ",
+                   theme_rotate, ",\n    ",
+                   theme_font, ",\n",
+                   "  )",
+                   sep = ""
+        )
+      }
 
       # Replace name of variables by values
       p <- str_replace_all(p, "input\\$y_var", input$y_var)
@@ -388,9 +459,14 @@ ggplot_shiny <- function( dataset = NA ) {
       p <- str_replace_all(p, "input\\$bw_adjust", as.character(input$bw_adjust))
       p <- str_replace_all(p, "input\\$dot_dir", as.character(input$dot_dir))
       p <- str_replace_all(p, "input\\$alpha", as.character(input$alpha))
+      p <- str_replace_all(p, "input\\$size_jitter", as.character(input$size_jitter))
+      p <- str_replace_all(p, "input\\$width_jitter", as.character(input$width_jitter))
+      p <- str_replace_all(p, "input\\$opac_jitter", as.character(input$opac_jitter))
+      p <- str_replace_all(p, "input\\$col_jitter", as.character(input$col_jitter))
       p <- str_replace_all(p, "input\\$lab_x", as.character(input$lab_x))
       p <- str_replace_all(p, "input\\$lab_y", as.character(input$lab_y))
       p <- str_replace_all(p, "input\\$title", as.character(input$title))
+      p <- str_replace_all(p, "input\\$palette", as.character(input$palette))
       p <- str_replace_all(p, "input\\$font_size_titles", as.character(input$font_size_titles))
       p <- str_replace_all(p, "input\\$font_size_axes", as.character(input$font_size_axes))
       p <- str_replace_all(p, "input\\$font", as.character(input$font))
@@ -471,7 +547,8 @@ ggplot_shiny <- function( dataset = NA ) {
             sep = "")
 
     })
-
+    # End R-session when browser closed
+    session$onSessionEnded(stopApp)
   }
   shinyApp(ui, server)
 }
