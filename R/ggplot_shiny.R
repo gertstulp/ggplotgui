@@ -552,4 +552,3 @@ ggplot_shiny <- function( dataset = NA ) {
   }
   shinyApp(ui, server)
 }
-ggplot_shiny()
