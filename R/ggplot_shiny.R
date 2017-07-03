@@ -272,9 +272,20 @@ ggplot_shiny <- function( dataset = NA ) {
                                           selected = "theme_bw()")),
                      tabPanel("Legend",
                               conditionalPanel(condition="input.group != '.'",
-                                               checkboxInput(inputId = "change_legend",
-                                                             label = strong("Legend stuff"),
-                                                             value = FALSE)
+                                               radioButtons(inputId = "change_legend",
+                                                             label = NULL,
+                                                             choices = c("Keep legend as it is",
+                                                                         "Remove legend",
+                                                                         "Change legend"),
+                                                             selected = "Keep legend as it is"),
+                                               conditionalPanel(condition="input.change_legend=='Change legend'",
+                                                             textInput("legend_title", "Title legend:", value = "title legend"),
+                                                             selectInput("pos_leg", "Position legend",
+                                                                         choices = c("right",
+                                                                                     "left",
+                                                                                     "top",
+                                                                                     "bottom"))
+                                                             )
                                       )
                      )
                      )
@@ -378,14 +389,14 @@ ggplot_shiny <- function( dataset = NA ) {
         } else if (input$group == ".") {
           p <- "ggplot(df, aes(y = input$y_var, x = input$x_var)) + geom_boxplot(notch = input$notch)"
         }
-        if (input$jitter) p <- paste(p, "+", "geom_jitter(size = 1, alpha = 0.5, width = 0.25, colour = 'black')")
+        if (input$jitter) p <- paste(p, "+", "geom_jitter(size = input$size_jitter, alpha = input$opac_jitter, width = input$width_jitter)")
       } else if (input$Type == "Violin") {
         if (input$group != ".") {
           p <- "ggplot(df, aes(y = input$y_var, x = input$x_var, colour = input$group)) + geom_violin(adjust = input$bw_adjust)"
         } else if (input$group == ".") {
           p <- "ggplot(df, aes(y = input$y_var, x = input$x_var)) + geom_violin(adjust = input$bw_adjust)"
         }
-        if (input$jitter) p <- paste(p, "+", "geom_jitter(size = 1, alpha = 0.5, width = 0.25, colour = 'black')")
+        if (input$jitter) p <- paste(p, "+", "geom_jitter(size = input$size_jitter, alpha = input$opac_jitter, width = input$width_jitter, colour = 'input$col_jitter')")
       } else if (input$Type == "Dotplot") {
         if (input$group != ".") {
           p <- "ggplot(df, aes(x = input$x_var, y = input$y_var, fill = input$group)) + geom_dotplot(binaxis = 'y', binwidth = input$binwidth, stackdir = 'input$dot_dir')"
@@ -416,11 +427,20 @@ ggplot_shiny <- function( dataset = NA ) {
       if (facets != ". ~ .") p <- paste(p, "+", "facet_grid(", facets, ")")
 
       # if labels specified
-      if (input$label_axes) p <- paste(p, "+", "labs(x = 'input$lab_x', y = 'input$lab_y')")
+      if (input$label_axes) {
+        p <- paste(p, "+", "labs(x = 'input$lab_x', y = 'input$lab_y')")
+      }
       # if title specified
       if (input$add_title) p <- paste(p, "+", "ggtitle('input$title')")
       # if legend specified
-      #if (input$add_lab_legend) p <- paste(p, "+", "guides(colour = 'input$lab_legend')")
+      if (input$change_legend == 'Change legend') {
+        if (input$Type == "Histogram" || input$Type == "Density" || input$Type == "Dotplot") {
+          p <- paste(p, "+", "labs(fill = 'input$legend_title')")
+        } else {
+          p <- paste(p, "+", "labs(colour = 'input$legend_title')")
+        }
+      }
+
       # if colour legend specified
       if (input$change_colour) {
         if (input$Type == "Histogram" || input$Type == "Density" || input$Type == "Dotplot") {
@@ -436,15 +456,24 @@ ggplot_shiny <- function( dataset = NA ) {
       if (input$change_font_size) theme_axis_text = "axis.text = element_text(size = input$font_size_axes)" else theme_axis_text = ""
       if (input$change_font) theme_font = "text = element_text(family = 'input$font')" else theme_font = ""
       if (input$rotate_text_x) theme_rotate = "axis.text.x = element_text(angle = 45, hjust = 1)" else theme_rotate = ""
+      if (input$change_legend == "Keep legend as it is") {
+        theme_legend = ""
+      } else if (input$change_legend == "Remove legend") {
+        theme_legend = "legend.position = 'none'"
+      } else {
+        theme_legend = "legend.position = 'input$pos_leg'"
+      }
 
       if (input$change_font_size ||
           input$change_font ||
-          input$rotate_text_x) {
+          input$rotate_text_x ||
+          input$change_legend != 'Keep legend as it is') {
         p <- paste(p, " + theme(\n    ",
                    theme_axis_title, ",\n    ",
                    theme_axis_text, ",\n    ",
                    theme_rotate, ",\n    ",
-                   theme_font, ",\n",
+                   theme_font, ",\n    ",
+                   theme_legend, ",\n",
                    "  )",
                    sep = ""
         )
@@ -470,6 +499,8 @@ ggplot_shiny <- function( dataset = NA ) {
       p <- str_replace_all(p, "input\\$font_size_titles", as.character(input$font_size_titles))
       p <- str_replace_all(p, "input\\$font_size_axes", as.character(input$font_size_axes))
       p <- str_replace_all(p, "input\\$font", as.character(input$font))
+      p <- str_replace_all(p, "input\\$legend_title", as.character(input$legend_title))
+      p <- str_replace_all(p, "input\\$pos_leg", as.character(input$pos_leg))
       p <- str_replace_all(p, "    ,\n", "")
       p <- str_replace_all(p, "\\),\n  \\)", "\\)\n  \\)")
 
@@ -552,3 +583,4 @@ ggplot_shiny <- function( dataset = NA ) {
   }
   shinyApp(ui, server)
 }
+ggplot_shiny()
