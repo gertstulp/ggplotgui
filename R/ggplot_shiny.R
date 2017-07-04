@@ -133,6 +133,9 @@ ggplot_shiny <- function( dataset = NA ) {
                            h4("R-code to build graph")
                         )
       ),
+    h6("For more info see the 'Info'-tab or visit",
+       a("https://github.com/gertstulp/ggplotgui",
+         href = "https://github.com/gertstulp/ggplotgui")),
 
     #####################################
     ########### OUPUT TABS ##############
@@ -141,16 +144,63 @@ ggplot_shiny <- function( dataset = NA ) {
     mainPanel(width = 6,
       tabsetPanel(type = "tabs",
                   # Data upload tab
-                  tabPanel("Data upload", dataTableOutput("out_table"),
-                           h6("This application was created by ", a("Gert Stulp", href = "http://www.gertstulp.com/"), ".
-                              Please send bugs and feature requests to g.stulp(at)rug.nl. This application uses the ",
-                              a("shiny package from RStudio", href = "http://www.rstudio.com/shiny/"), ".")
-                  ),
-                  tabPanel("ggplot", plotOutput("out_ggplot")),
+                  tabPanel("Data upload", dataTableOutput("out_table")),
+                  tabPanel("ggplot", mainPanel(downloadButton("download_plot_PDF", "Download pdf of figure"),
+                                              plotOutput("out_ggplot"))),
                   tabPanel("Plotly", plotlyOutput("out_plotly")),
                   tabPanel("R-code", verbatimTextOutput("out_r_code")),
+                  tabPanel("Info", h3("Background"),
+                                    p(a("R", href = "https://www.r-project.org/"), "is amazing, but daunting for many.
+                                    The programming style of R, compared to the point-and-click style of typical
+                                    software, is a hurdle for many. Perhaps particularly so for those in the social
+                                    sciences, whose statistical needs are often met by other software packages.
+                                    Yet such packages are often very limited in terms of their options to visualize
+                                    the data at hand. I believe that the amazing visualization-capabilities of R
+                                    might be one way to get more people to use it. To lower the barrier to start using
+                                    R, this package allows users to visualize their data using an online graphical
+                                    user interface (GUI) that makes use of R's visualization package",
+                                    a("ggplot", href = "http://ggplot2.org/"), ". There are two ways of using this
+                                    functionality: 1) online, where users can upload their data and visualize it
+                                    without needing R, by visiting ",
+                                    a("this website", href = "https://site.shinyserver.dck.gmw.rug.nl/ggplotgui/"),
+                                    "; 2) from within the R-environment (by using the ", code("ggplot_shiny()"),
+                                    "function). Importantly, the R-code will also be provided such that the user
+                                    can recreate the graphs within the R-environment. The main aim (or hope) is to get
+                                    more people using R and its wonderful (graphing) capabilities."),
+                                    h3("App info"),
+                                    p("This application was built in ", a("R", href = "https://www.r-project.org/"),
+                                    "version 3.3.2, and uses the following packages: ",
+                                    a("ggplot2", href = "http://ggplot2.tidyverse.org/"), ",",
+                                    a("Shiny", href = "http://www.rstudio.com/shiny/"), ",",
+                                    a("stringr", href = "http://stringr.tidyverse.org/"), ",",
+                                    a("plotly", href = "https://plot.ly/r/"), ",",
+                                    a("readr", href = "http://readr.tidyverse.org/"), ",",
+                                    a("readxl", href = "http://readxl.tidyverse.org/"), ",",
+                                    a("haven", href = "http://haven.tidyverse.org/"), ", and",
+                                    a("RColorBrewer.", href = "http://stringr.tidyverse.org/")),
+                                    p("This application was created by ",
+                                    a("Gert Stulp", href = "http://www.gertstulp.com/"),
+                                    ". Please do report bugs and send feature requests to ",
+                                    a("g.stulp[at]rug.nl", href = "mailto:g.stulp@rug.nl"),
+                                    ". Visit ",
+                                    a("https://github.com/gertstulp/ggplotgui",
+                                      href = "https://github.com/gertstulp/ggplotgui"),
+                                      "for further description and code."),
+                                    h3("Acknowledgements"),
+                                    p("Thanks to Wilmer Joling for setting up the ",
+                                      a("website", href = "https://site.shinyserver.dck.gmw.rug.nl/ggplotgui/"),
+                                      "which is based on the magical but incomprehensible",
+                                      a("docker", href = "https://www.docker.com/"),
+                                      ". Thanks to ",
+                                      a("Hadley Wicham", href = "http://hadley.nz/"),
+                                      " for making such good packages (and open access
+                                      books describing them), that allow even low-skilled
+                                      and low-talented programmers like myself to be able to
+                                      contribute to R")
+                                      ),
                   id = "tabs"
                   )
+
       ),
 
     #####################################
@@ -255,12 +305,6 @@ ggplot_shiny <- function( dataset = NA ) {
                                                              min = 0, max = 1, value = 0.25, step = 0.01)
                                 )
                               ),
-                              checkboxInput("fig_size", strong("Adjust plot size (# pixels)"), FALSE),
-                              conditionalPanel(condition="input.fig_size",
-                                               numericInput("fig_height", "Plot height:", value = 480),
-                                               numericInput("fig_width", "Plot width:", value = 480),
-                                               numericInput("fig_dpi", "Plot dpi:", value = 72)
-                              ),
                               selectInput("theme", "Theme",
                                           choices = c("bw" = "theme_bw()",
                                                       "classic" = "theme_classic()",
@@ -287,6 +331,18 @@ ggplot_shiny <- function( dataset = NA ) {
                                                                                      "bottom"))
                                                              )
                                       )
+                     ),
+                     tabPanel("Size",
+                              checkboxInput("fig_size", strong("Adjust plot size on screen"), FALSE),
+                              conditionalPanel(condition="input.fig_size",
+                                               numericInput("fig_height", "Plot height (# pixels): ", value = 480),
+                                               numericInput("fig_width", "Plot width (# pixels):", value = 480)
+                              ),
+                              checkboxInput("fig_size_download", strong("Adjust plot size for download"), FALSE),
+                              conditionalPanel(condition="input.fig_size_download",
+                                               numericInput("fig_height_download", "Plot height (in cm):", value = 7),
+                                               numericInput("fig_width_download", "Plot width (in cm):", value = 7)
+                              )
                      )
                      )
                        )
@@ -519,7 +575,8 @@ ggplot_shiny <- function( dataset = NA ) {
     # Convert centimeters to pixels
     width <- reactive ({ input$fig_width })
     height <- reactive ({ input$fig_height })
-    dpi_f <- reactive ({ as.numeric(input$fig_dpi) })
+    width_download <- reactive ({ input$fig_width_download })
+    height_download <- reactive ({ input$fig_height_download })
 
     output$out_ggplot <- renderPlot(width = width,
                                     height = height,
@@ -558,7 +615,10 @@ ggplot_shiny <- function( dataset = NA ) {
       package_plotly_text <- paste("# If you want the plot to be interactive, you need the following package(s): \n", "library(plotly)", sep = "")
       plotly_text <- paste("ggplotly(graph)")
       save_text <- "# If you would like to save your graph, you can use:"
-      save_code <- "ggsave('my_graph.pdf', graph, width = 10, height = 10, unit = 'cm')"
+      save_code <- paste("ggsave('my_graph.pdf', graph, width = ",
+                          width_download(), ", height = ",
+                          height_download(), ", unit = 'cm')",
+                          sep = '')
 
       paste(begin_text,
             "\n\n",
@@ -578,6 +638,22 @@ ggplot_shiny <- function( dataset = NA ) {
             sep = "")
 
     })
+
+#####################################
+#### GENERATE R-CODE FOR OUTPUT #####
+#####################################
+
+  output$download_plot_PDF <- downloadHandler(
+      filename <- function() { paste('Figure_ggplotGUI_',
+                                     Sys.time(), '.pdf', sep = "") },
+      content <- function(file) {
+        df <- df_shiny()
+        p <- eval(parse(text = string_code()))
+        ggsave(file, p, width = width_download(), height = height_download(), unit = "cm")
+      },
+      contentType = 'application/pdf' # MIME type of the image
+    )
+
     # End R-session when browser closed
     session$onSessionEnded(stopApp)
   }
