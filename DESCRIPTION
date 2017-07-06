@@ -9,7 +9,10 @@ Imports:
     shiny,
     ggplot2,
     stringr,
-    readr
+    readr,
+    haven,
+    readxl,
+    RColorBrewer
 License: GPL-3
 BugReports: https://github.com/gertstulp/ggplotgui/issues
 URL: https://github.com/gertstulp/ggplotgui/
