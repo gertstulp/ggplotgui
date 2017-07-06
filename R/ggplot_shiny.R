@@ -144,6 +144,15 @@ ggplot_shiny <- function( dataset = NA ) {
                           label = strong("Show confidence interval"),
                           value = FALSE)
           )
+        ),
+        conditionalPanel(
+          condition = "input.Type == 'Dot + Error'",
+          selectInput("CI", "Confidence Interval:",
+                      choices = c("68% (1 SE)" = 1,
+                                  "90%" = 1.645,
+                                  "95%" = 1.96,
+                                  "99%" = 2.575),
+                      selected = 1.96)
         )
       ),
       conditionalPanel(
@@ -155,9 +164,9 @@ ggplot_shiny <- function( dataset = NA ) {
        a("https://github.com/gertstulp/ggplotgui",
          href = "https://github.com/gertstulp/ggplotgui")),
 
-    #####################################
-    ########### OUPUT TABS ##############
-    #####################################
+#####################################
+########### OUPUT TABS ##############
+#####################################
 
     mainPanel(width = 6,
       tabsetPanel(
@@ -236,12 +245,13 @@ p(
       )
     ),
 
-    #####################################
-    ######### AESTHETICS TAB ############
-    #####################################
+#####################################
+######### AESTHETICS TAB ############
+#####################################
 
     conditionalPanel(
-      condition = "input.tabs=='ggplot' || input.tabs=='Plotly'",
+      condition = "input.tabs=='ggplot' || input.tabs=='Plotly' ||
+                    input.tabs=='R-code'",
       sidebarPanel(
         width = 3,
         h4("Change aesthetics"),
@@ -349,12 +359,13 @@ p(
                             strong("Change look jitter"), FALSE),
               conditionalPanel(
                 condition = "input.adj_jitter",
-                textInput("col_jitter", "Colour:", value = "black"),
+                textInput("col_jitter", "Colour (name or RGB):",
+                          value = "black"),
                 numericInput("size_jitter", "Size:", value = 1),
                 sliderInput("opac_jitter", "Opacity:",
                             min = 0, max = 1, value = 0.5, step = 0.01),
                 sliderInput("width_jitter", "Width jitter:",
-                            min = 0, max = 1, value = 0.25, step = 0.01)
+                            min = 0, max = 0.5, value = 0.25, step = 0.01)
               )
             ),
             checkboxInput("adj_grd",
@@ -559,9 +570,9 @@ p(
           paste("geom_dotplot(binaxis = 'y', binwidth = input$binwidth, ",
                 "stackdir = 'input$dot_dir')", sep = ""),
         if (input$Type == "Dot + Error")
-          paste("geom_point(stat = 'summary', fun.y = 'mean') +\n",
+          paste("geom_point(stat = 'summary', fun.y = 'mean') +\n  ",
                 "geom_errorbar(stat = 'summary', fun.data = 'mean_se', ", "
-                width=0, fun.args = list(mult = 1.96))", sep = ""),
+                width=0, fun.args = list(mult = input$CI))", sep = ""),
         if (input$Type == "Scatter")
           "geom_point()",
         if (input$Type == "Scatter" && input$line)
@@ -649,6 +660,7 @@ p(
                "input\\$alpha" = as.character(input$alpha),
                "input\\$se" = as.character(input$se),
                "input\\$smooth" = as.character(input$smooth),
+               "input\\$CI" = as.character(input$CI),
                "input\\$size_jitter" = as.character(input$size_jitter),
                "input\\$width_jitter" = as.character(input$width_jitter),
                "input\\$opac_jitter" = as.character(input$opac_jitter),
