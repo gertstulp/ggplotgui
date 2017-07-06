@@ -305,6 +305,11 @@ ggplot_shiny <- function( dataset = NA ) {
                                                              min = 0, max = 1, value = 0.25, step = 0.01)
                                 )
                               ),
+                              checkboxInput("change_gridlines", strong("Remove gridlines"), FALSE),
+                              conditionalPanel(condition="input.change_gridlines",
+                                               checkboxInput("gridlines_major", strong("Remove major gridlines"), FALSE),
+                                               checkboxInput("gridlines_minor", strong("Remove minor gridlines"), FALSE)
+                              ),
                               selectInput("theme", "Theme",
                                           choices = c("bw" = "theme_bw()",
                                                       "classic" = "theme_classic()",
@@ -519,16 +524,23 @@ ggplot_shiny <- function( dataset = NA ) {
       } else {
         theme_legend = "legend.position = 'input$pos_leg'"
       }
+      if (input$gridlines_major) theme_grid_maj = "panel.grid.major = element_blank()" else theme_grid_maj = ""
+      if (input$gridlines_minor) theme_grid_min = "panel.grid.minor = element_blank()" else theme_grid_min = ""
+
+      panel.grid.major = element_blank()
 
       if (input$change_font_size ||
           input$change_font ||
           input$rotate_text_x ||
-          input$change_legend != 'Keep legend as it is') {
+          input$change_legend != 'Keep legend as it is' ||
+          input$change_gridlines) {
         p <- paste(p, " + theme(\n    ",
                    theme_axis_title, ",\n    ",
                    theme_axis_text, ",\n    ",
                    theme_rotate, ",\n    ",
                    theme_font, ",\n    ",
+                   theme_grid_maj, ",\n    ",
+                   theme_grid_min, ",\n    ",
                    theme_legend, ",\n",
                    "  )",
                    sep = ""
