@@ -79,7 +79,8 @@ ggplot_shiny <- function( dataset = NA ) {
         )
       ),
       conditionalPanel(
-        condition = "input.tabs=='ggplot' || input.tabs=='Plotly'",
+        condition = "input.tabs=='ggplot' || input.tabs=='Plotly' ||
+                    input.tabs=='R-code'",
         h4("Create visualization"),
         selectInput(inputId = "Type",
                     label = "Type of graph:",
@@ -144,10 +145,6 @@ ggplot_shiny <- function( dataset = NA ) {
                           value = FALSE)
           )
         )
-      ),
-      conditionalPanel(
-        condition = "input.tabs=='R-code'",
-        h4("R-code to build graph")
       ),
       conditionalPanel(
         condition = "input.tabs=='Info'",
@@ -300,11 +297,11 @@ p(
             "Theme",
             conditionalPanel(
               condition = "input.group != '.'",
-              checkboxInput(inputId = "adj_colour",
+              checkboxInput(inputId = "adj_col",
                             label = strong("Change colours"),
                             value = FALSE),
               conditionalPanel(
-                condition = "input.adj_colour",
+                condition = "input.adj_col",
                 selectInput(inputId = "palette",
                             label = strong("Select palette"),
                             choices = list(
@@ -391,7 +388,7 @@ p(
                            selected = "Keep legend as it is"),
               conditionalPanel(
                 condition = "input.adj_leg=='Change legend'",
-                textInput("legend_title", "Title legend:",
+                textInput("leg_ttl", "Title legend:",
                           value = "title legend"),
                 selectInput("pos_leg", "Position legend",
                             choices = c("right",
@@ -523,87 +520,85 @@ p(
 
     string_code <- reactive({
 
-      if (input$Type == "Histogram") {
-        if (input$group != ".") {
-          p <-
-            "ggplot(df, aes(x = input$y_var)) +
-            geom_histogram(aes(fill = input$group), position = 'identity',
-            alpha = input$alpha, binwidth = input$binwidth)"
-        } else if (input$group == ".") {
-          p <- "ggplot(df, aes(x = input$y_var)) + geom_histogram(position = 'identity', alpha = input$alpha, binwidth = input$binwidth)"
-        }
-      } else if (input$Type == "Density") {
-        if (input$group != ".") {
-          p <- "ggplot(df, aes(x = input$y_var)) + geom_density(aes(fill = input$group), position = 'identity', alpha = input$alpha, adjust = input$adj_bw)"
-        } else if (input$group == ".") {
-          p <- "ggplot(df, aes(x = input$y_var)) + geom_density(position = 'identity', alpha = input$alpha, adjust = input$adj_bw)"
-        }
-      } else if (input$Type == "Boxplot") {
-        if (input$group != ".") {
-          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var, colour = input$group)) + geom_boxplot(notch = input$notch)"
-        } else if (input$group == ".") {
-          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var)) + geom_boxplot(notch = input$notch)"
-        }
-        if (input$jitter) p <- paste(p, "+", "geom_jitter(size = input$size_jitter, alpha = input$opac_jitter, width = input$width_jitter)")
-      } else if (input$Type == "Violin") {
-        if (input$group != ".") {
-          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var, colour = input$group)) + geom_violin(adjust = input$adj_bw)"
-        } else if (input$group == ".") {
-          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var)) + geom_violin(adjust = input$adj_bw)"
-        }
-        if (input$jitter) p <- paste(p, "+", "geom_jitter(size = input$size_jitter, alpha = input$opac_jitter, width = input$width_jitter, colour = 'input$col_jitter')")
-      } else if (input$Type == "Dotplot") {
-        if (input$group != ".") {
-          p <- "ggplot(df, aes(x = input$x_var, y = input$y_var, fill = input$group)) + geom_dotplot(binaxis = 'y', binwidth = input$binwidth, stackdir = 'input$dot_dir')"
-        } else if (input$group == ".") {
-          p <- "ggplot(df, aes(x = input$x_var, y = input$y_var)) + geom_dotplot(binaxis = 'y', binwidth = input$binwidth, stackdir = 'input$dot_dir')"
-        }
-      } else if (input$Type == "Dot + Error") {
-        if (input$group != ".") {
-          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var, colour = input$group)) + geom_point(stat = 'summary', fun.y = 'mean') + geom_errorbar(stat = 'summary', fun.data = 'mean_se', width=0, fun.args = list(mult = 1.96))"
-        } else if (input$group == ".") {
-          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var)) + geom_point(stat = 'summary', fun.y = 'mean') + geom_errorbar(stat = 'summary', fun.data = 'mean_se', width=0, fun.args = list(mult = 1.96))"
-        }
-        if (input$jitter) p <- paste(p, "+", "geom_jitter(size = input$size_jitter, alpha = input$opac_jitter, width = input$width_jitter, colour = 'input$col_jitter')")
-      } else if (input$Type == "Scatter") {
-        if (input$group != ".") {
-          p <- "ggplot(df, aes(x = input$x_var, y = input$y_var, colour = input$group)) + geom_point()"
-        } else if (input$group == ".") {
-          p <- "ggplot(df, aes(x = input$x_var, y = input$y_var)) + geom_point()"
-        }
-        if (input$line) {
-          # If line is selected add regression line
-          p <- paste(p, " + ", "geom_smooth(se = input$se, method='", input$smooth, "')", sep = "")
-        }
-      }
+      # Variable used for how to deal with x/y in ggplot
+      gg_x_y <- input$Type == "Histogram" ||
+                input$Type == "Density"
+      # Variable used for how to deal with colour/fill
+      gg_fil <- input$Type == "Histogram" ||
+                input$Type == "Density" ||
+                input$Type == "Dotplot"
+
+      # Only plot jitter when graphs allow them
+      if (gg_fil || input$Type == "Scatter")
+        jitt <- FALSE else jitt <- input$jitter
+
+      p <- paste(
+        "ggplot(df, aes(",
+        if (gg_x_y) {
+          "x = input$y_var"
+        } else {
+          "x = input$x_var, y = input$y_var"
+        },
+        if (input$group != "." && gg_fil) {
+          ", fill = input$group"
+        } else if (input$group != "." && !gg_fil) {
+          ", colour = input$group"
+        },
+        ")) + ",
+        if (input$Type == "Histogram")
+          paste("geom_histogram(position = 'identity', alpha = input$alpha, ",
+                "binwidth = input$binwidth)", sep = ""),
+        if (input$Type == "Density")
+          paste("geom_density(position = 'identity', alpha = input$alpha, ",
+                "adjust = input$adj_bw)", sep = ""),
+        if (input$Type == "Boxplot")
+          "geom_boxplot(notch = input$notch)",
+        if (input$Type == "Violin")
+          "geom_violin(adjust = input$adj_bw)",
+        if (input$Type == "Dotplot")
+          paste("geom_dotplot(binaxis = 'y', binwidth = input$binwidth, ",
+                "stackdir = 'input$dot_dir')", sep = ""),
+        if (input$Type == "Dot + Error")
+          paste("geom_point(stat = 'summary', fun.y = 'mean') +\n",
+                "geom_errorbar(stat = 'summary', fun.data = 'mean_se', ", "
+                width=0, fun.args = list(mult = 1.96))", sep = ""),
+        if (input$Type == "Scatter")
+          "geom_point()",
+        if (input$Type == "Scatter" && input$line)
+          "+ geom_smooth(se = input$se, method = 'input$smooth')",
+        if (jitt)
+          paste(" + geom_jitter(size = input$size_jitter, ",
+                "alpha = input$opac_jitter, width = input$width_jitter, ",
+                "colour = 'input$col_jitter')", sep = ""),
+        sep = ""
+      )
 
       # if at least one facet column/row is specified, add it
       facets <- paste(input$facet_row, "~", input$facet_col)
-      if (facets != ". ~ .") p <- paste(p, "+", "facet_grid(", facets, ")")
+      if (facets != ". ~ .")
+        p <- paste(p, "+ facet_grid(", facets, ")")
 
       # if labels specified
-      if (input$label_axes) {
-        p <- paste(p, "+", "labs(x = 'input$lab_x', y = 'input$lab_y')")
-      }
+      if (input$label_axes)
+        p <- paste(p, "+ labs(x = 'input$lab_x', y = 'input$lab_y')")
+
       # if title specified
-      if (input$add_title) p <- paste(p, "+", "ggtitle('input$title')")
+      if (input$add_title)
+        p <- paste(p, "+ ggtitle('input$title')")
+
       # if legend specified
-      if (input$adj_leg == "Change legend") {
-        if (input$Type == "Histogram" || input$Type == "Density" || input$Type == "Dotplot") {
-          p <- paste(p, "+", "labs(fill = 'input$legend_title')")
-        } else {
-          p <- paste(p, "+", "labs(colour = 'input$legend_title')")
-        }
-      }
+      if (input$adj_leg == "Change legend")
+        p <- paste(p, "+ labs(",
+                   if (gg_fil) "fill" else "colour",
+                   " = 'input$leg_ttl')",
+                   sep = "")
 
       # if colour legend specified
-      if (input$adj_colour) {
-        if (input$Type == "Histogram" || input$Type == "Density" || input$Type == "Dotplot") {
-          p <- paste(p, "+ scale_fill_brewer(palette = 'input$palette')")
-        } else {
-          p <- paste(p, "+ scale_colour_brewer(palette = 'input$palette')")
-        }
-      }
+      if (input$adj_col == "Change legend")
+        p <- paste(p, "+ scale_",
+                   if (gg_fil) "fill" else "colour",
+                   "_brewer(palette = 'input$palet')",
+                   sep = "")
 
       # If a theme specified
       p <- paste(p, "+", input$theme)
@@ -652,6 +647,8 @@ p(
                "input\\$adj_bw" = as.character(input$adj_bw),
                "input\\$dot_dir" = as.character(input$dot_dir),
                "input\\$alpha" = as.character(input$alpha),
+               "input\\$se" = as.character(input$se),
+               "input\\$smooth" = as.character(input$smooth),
                "input\\$size_jitter" = as.character(input$size_jitter),
                "input\\$width_jitter" = as.character(input$width_jitter),
                "input\\$opac_jitter" = as.character(input$opac_jitter),
@@ -659,11 +656,11 @@ p(
                "input\\$lab_x" = as.character(input$lab_x),
                "input\\$lab_y" = as.character(input$lab_y),
                "input\\$title" = as.character(input$title),
-               "input\\$palette" = as.character(input$palette),
+               "input\\$palette" = as.character(input$palet),
                "input\\$fnt_sz_ttl" = as.character(input$fnt_sz_ttl),
                "input\\$fnt_sz_ax" = as.character(input$fnt_sz_ax),
                "input\\$font" = as.character(input$font),
-               "input\\$legend_title" = as.character(input$legend_title),
+               "input\\$leg_ttl" = as.character(input$leg_ttl),
                "input\\$pos_leg" = as.character(input$pos_leg))
       )
       # Creates well-formatted R-code for output
