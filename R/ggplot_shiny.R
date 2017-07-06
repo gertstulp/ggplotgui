@@ -579,7 +579,7 @@ p(
 
       # if at least one facet column/row is specified, add it
       facets <- paste(input$facet_row, "~", input$facet_col)
-      if (facets != ". ~ .") p <- paste(p, "+", "facet_grd(", facets, ")")
+      if (facets != ". ~ .") p <- paste(p, "+", "facet_grid(", facets, ")")
 
       # if labels specified
       if (input$label_axes) {
@@ -645,26 +645,26 @@ p(
       p <- str_replace_all(
              p,
              c("input\\$y_var" = input$y_var,
-               "input\\$x_var", input$x_var,
-               "input\\$group", input$group,
-               "input\\$notch", as.character(input$notch),
-               "input\\$binwidth", as.character(input$binwidth),
-               "input\\$adj_bw", as.character(input$adj_bw),
-               "input\\$dot_dir", as.character(input$dot_dir),
-               "input\\$alpha", as.character(input$alpha),
-               "input\\$size_jitter", as.character(input$size_jitter),
-               "input\\$width_jitter", as.character(input$width_jitter),
-               "input\\$opac_jitter", as.character(input$opac_jitter),
-               "input\\$col_jitter", as.character(input$col_jitter),
-               "input\\$lab_x", as.character(input$lab_x),
-               "input\\$lab_y", as.character(input$lab_y),
-               "input\\$title", as.character(input$title),
-               "input\\$palette", as.character(input$palette),
-               "input\\$fnt_sz_ttl", as.character(input$fnt_sz_ttl),
-               "input\\$fnt_sz_ax", as.character(input$fnt_sz_ax),
-               "input\\$font", as.character(input$font),
-               "input\\$legend_title", as.character(input$legend_title),
-               "input\\$pos_leg", as.character(input$pos_leg))
+               "input\\$x_var" = input$x_var,
+               "input\\$group" = input$group,
+               "input\\$notch" = as.character(input$notch),
+               "input\\$binwidth" = as.character(input$binwidth),
+               "input\\$adj_bw" = as.character(input$adj_bw),
+               "input\\$dot_dir" = as.character(input$dot_dir),
+               "input\\$alpha" = as.character(input$alpha),
+               "input\\$size_jitter" = as.character(input$size_jitter),
+               "input\\$width_jitter" = as.character(input$width_jitter),
+               "input\\$opac_jitter" = as.character(input$opac_jitter),
+               "input\\$col_jitter" = as.character(input$col_jitter),
+               "input\\$lab_x" = as.character(input$lab_x),
+               "input\\$lab_y" = as.character(input$lab_y),
+               "input\\$title" = as.character(input$title),
+               "input\\$palette" = as.character(input$palette),
+               "input\\$fnt_sz_ttl" = as.character(input$fnt_sz_ttl),
+               "input\\$fnt_sz_ax" = as.character(input$fnt_sz_ax),
+               "input\\$font" = as.character(input$font),
+               "input\\$legend_title" = as.character(input$legend_title),
+               "input\\$pos_leg" = as.character(input$pos_leg))
       )
       # Creates well-formatted R-code for output
       p <- str_replace_all(p, ",\n    \\)", "\n  \\)")
@@ -707,41 +707,31 @@ p(
 
     output$out_r_code <- renderText({
 
-      begin_text <- "# You can use the below code to generate the graph\n#
-                     Don't forget to replace the 'df' with the name\n#
-                     of your dataframe"
-      package_text <- paste("# You need the following package(s): \n",
-                            "library(ggplot2)", sep = "")
-      graph_text <- "# The code below will generate the graph:"
-      gg_text <- string_code()
-      gg_text <- str_replace_all(gg_text, "\\+ ", "+\n  ")
-      gg_text <- paste("graph <- ", gg_text, "\ngraph", sep = "")
-      package_plotly_text <- paste("# If you want the plot to be interactive,
-                                   you need the following package(s): \n",
-                                   "library(plotly)", sep = "")
-      plotly_text <- paste("ggplotly(graph)")
-      save_text <- "# If you would like to save your graph, you can use:"
-      save_code <- paste("ggsave('my_graph.pdf', graph, width = ",
-                          width_download(), ", height = ",
-                          height_download(), ", units = 'cm')",
-                          sep = "")
+      gg_code <- string_code()
+      gg_code <- str_replace_all(gg_code, "\\+ ", "+\n  ")
 
-      paste(begin_text,
-            "\n\n",
-            package_text,
-            "\n\n",
-            graph_text,
-            "\n",
-            gg_text,
-            "\n\n",
-            package_plotly_text,
-            "\n\n",
-            plotly_text,
-            "\n\n",
-            save_text,
-            "\n",
-            save_code,
-            sep = "")
+      paste(
+        "## You can use the below code to generate the graph.\n",
+        "## Don't forget to replace the 'df' with the name\n",
+        "## of your dataframe\n\n",
+        "# You need the following package(s):\n",
+        "library(\"ggplot2\")\n\n",
+        "# The code below will generate the graph:\n",
+        "graph <- ",
+        gg_code,
+        "\ngraph\n\n",
+        "# If you want the plot to be interactive,\n",
+        "# you need the following package(s):\n",
+        "library(\"plotly\")\n",
+        "ggplotly(graph)\n\n",
+        "# If you would like to save your graph, you can use:\n",
+        "ggsave('my_graph.pdf', graph, width = ",
+        width_download(),
+        ", height = ",
+        height_download(),
+        ", units = 'cm')",
+        sep = ""
+      )
 
     })
 
