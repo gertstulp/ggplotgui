@@ -118,7 +118,7 @@ ggplot_shiny <- function( dataset = NA ) {
         conditionalPanel(
           condition = "input.Type == 'Dotplot'",
           selectInput("dot_dir", "Direction stack:",
-                      choice = c("up", "down", "center", "centerwhole"),
+                      choices = c("up", "down", "center", "centerwhole"),
                       selected = "up")
         ),
         conditionalPanel(
@@ -470,7 +470,7 @@ p(
 
     df_shiny <- reactive({
       if (input$data_input == 1) {
-        data <- get("mpg")
+        data <- ggplot2::mpg
       } else if (input$data_input == 2) {
         file_in <- input$upload
         # Avoid error message while file is not uploaded yet
@@ -720,7 +720,7 @@ p(
       save_text <- "# If you would like to save your graph, you can use:"
       save_code <- paste("ggsave('my_graph.pdf', graph, width = ",
                           width_download(), ", height = ",
-                          height_download(), ", unit = 'cm')",
+                          height_download(), ", units = 'cm')",
                           sep = "")
 
       paste(begin_text,
@@ -753,7 +753,7 @@ p(
       content <- function(file) {
         df <- df_shiny()
         p <- eval(parse(text = string_code()))
-        ggsave(file, p, width = width_download(), height = height_download(), unit = "cm")
+        ggsave(file, p, width = width_download(), height = height_download(), units = "cm")
       },
       contentType = "application/pdf" # MIME type of the image
   )
