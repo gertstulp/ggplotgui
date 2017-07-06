@@ -642,28 +642,31 @@ p(
       }
 
       # Replace name of variables by values
-      p <- str_replace_all(p, "input\\$y_var", input$y_var)
-      p <- str_replace_all(p, "input\\$x_var", input$x_var)
-      p <- str_replace_all(p, "input\\$group", input$group)
-      p <- str_replace_all(p, "input\\$notch", as.character(input$notch))
-      p <- str_replace_all(p, "input\\$binwidth", as.character(input$binwidth))
-      p <- str_replace_all(p, "input\\$adj_bw", as.character(input$adj_bw))
-      p <- str_replace_all(p, "input\\$dot_dir", as.character(input$dot_dir))
-      p <- str_replace_all(p, "input\\$alpha", as.character(input$alpha))
-      p <- str_replace_all(p, "input\\$size_jitter", as.character(input$size_jitter))
-      p <- str_replace_all(p, "input\\$width_jitter", as.character(input$width_jitter))
-      p <- str_replace_all(p, "input\\$opac_jitter", as.character(input$opac_jitter))
-      p <- str_replace_all(p, "input\\$col_jitter", as.character(input$col_jitter))
-      p <- str_replace_all(p, "input\\$lab_x", as.character(input$lab_x))
-      p <- str_replace_all(p, "input\\$lab_y", as.character(input$lab_y))
-      p <- str_replace_all(p, "input\\$title", as.character(input$title))
-      p <- str_replace_all(p, "input\\$palette", as.character(input$palette))
-      p <- str_replace_all(p, "input\\$fnt_sz_ttl", as.character(input$fnt_sz_ttl))
-      p <- str_replace_all(p, "input\\$fnt_sz_ax", as.character(input$fnt_sz_ax))
-      p <- str_replace_all(p, "input\\$font", as.character(input$font))
-      p <- str_replace_all(p, "input\\$legend_title", as.character(input$legend_title))
-      p <- str_replace_all(p, "input\\$pos_leg", as.character(input$pos_leg))
-      #p <- str_replace_all(p, "    ,\n", "")
+      p <- str_replace_all(
+             p,
+             c("input\\$y_var" = input$y_var,
+               "input\\$x_var", input$x_var,
+               "input\\$group", input$group,
+               "input\\$notch", as.character(input$notch),
+               "input\\$binwidth", as.character(input$binwidth),
+               "input\\$adj_bw", as.character(input$adj_bw),
+               "input\\$dot_dir", as.character(input$dot_dir),
+               "input\\$alpha", as.character(input$alpha),
+               "input\\$size_jitter", as.character(input$size_jitter),
+               "input\\$width_jitter", as.character(input$width_jitter),
+               "input\\$opac_jitter", as.character(input$opac_jitter),
+               "input\\$col_jitter", as.character(input$col_jitter),
+               "input\\$lab_x", as.character(input$lab_x),
+               "input\\$lab_y", as.character(input$lab_y),
+               "input\\$title", as.character(input$title),
+               "input\\$palette", as.character(input$palette),
+               "input\\$fnt_sz_ttl", as.character(input$fnt_sz_ttl),
+               "input\\$fnt_sz_ax", as.character(input$fnt_sz_ax),
+               "input\\$font", as.character(input$font),
+               "input\\$legend_title", as.character(input$legend_title),
+               "input\\$pos_leg", as.character(input$pos_leg))
+      )
+      # Creates well-formatted R-code for output
       p <- str_replace_all(p, ",\n    \\)", "\n  \\)")
 
       p
@@ -684,25 +687,18 @@ p(
     height_download <- reactive ({ input$fig_height_download })
 
     output$out_ggplot <- renderPlot(width = width,
-                                    height = height,
-                                    {
-
+                                    height = height, {
       # evaluate the string RCode as code
       df <- df_shiny()
       p <- eval(parse(text = string_code()))
-
       p
-
     })
 
     output$out_plotly <- renderPlotly({
-
       # evaluate the string RCode as code
       df <- df_shiny()
       p <- eval(parse(text = string_code()))
-
       ggplotly(p)
-
     })
 
 #####################################
@@ -711,13 +707,18 @@ p(
 
     output$out_r_code <- renderText({
 
-      begin_text <- "# You can use the below code to generate the graph\n# Don't forget to replace the 'df' with the name of your dataframe"
-      package_text <- paste("# You need the following package(s): \n", "library(ggplot2)", sep = "")
+      begin_text <- "# You can use the below code to generate the graph\n#
+                     Don't forget to replace the 'df' with the name\n#
+                     of your dataframe"
+      package_text <- paste("# You need the following package(s): \n",
+                            "library(ggplot2)", sep = "")
       graph_text <- "# The code below will generate the graph:"
       gg_text <- string_code()
       gg_text <- str_replace_all(gg_text, "\\+ ", "+\n  ")
       gg_text <- paste("graph <- ", gg_text, "\ngraph", sep = "")
-      package_plotly_text <- paste("# If you want the plot to be interactive, you need the following package(s): \n", "library(plotly)", sep = "")
+      package_plotly_text <- paste("# If you want the plot to be interactive,
+                                   you need the following package(s): \n",
+                                   "library(plotly)", sep = "")
       plotly_text <- paste("ggplotly(graph)")
       save_text <- "# If you would like to save your graph, you can use:"
       save_code <- paste("ggsave('my_graph.pdf', graph, width = ",
@@ -749,13 +750,14 @@ p(
 #####################################
 
   output$download_plot_PDF <- downloadHandler(
-      filename <- function() { paste("Figure_ggplotGUI_",
-                                     Sys.time(), ".pdf", sep = "")
+      filename <- function() {
+        paste("Figure_ggplotGUI_", Sys.time(), ".pdf", sep = "")
       },
       content <- function(file) {
         df <- df_shiny()
         p <- eval(parse(text = string_code()))
-        ggsave(file, p, width = width_download(), height = height_download(), units = "cm")
+        ggsave(file, p, width = width_download(),
+               height = height_download(), units = "cm")
       },
       contentType = "application/pdf" # MIME type of the image
   )
