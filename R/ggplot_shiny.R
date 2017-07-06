@@ -21,121 +21,139 @@ ggplot_shiny <- function( dataset = NA ) {
   ui <- fluidPage(
     headerPanel("ggplot GUI"),
     sidebarPanel(width = 3,
-      conditionalPanel(condition = "input.tabs=='Data upload'",
-                       h4("Data upload"),
-                       radioButtons( "data_input", "",
-                                    choices = if (is.data.frame(dataset)) {
-                                      list("Load sample data" = 1,
-                                           "Upload text file" = 2,
-                                           "Paste data" = 3,
-                                      "Data passed through R environment" = 4)
-                                    } else {
-                                        list("Load sample data" = 1,
-                                             "Upload file" = 2,
-                                             "Paste data" = 3)
-                                    },
-                                    selected = if (is.data.frame(dataset)) 4 else 1),
-                       conditionalPanel(condition = "input.data_input=='1'",
-                                        h5("dataset 'mpg' from library(ggplot2) loaded")
-                       ),
-                       conditionalPanel(condition = "input.data_input=='2'",
-                                        h5("Upload file: "),
-                                        fileInput("upload", "",
-                                                  multiple = FALSE),
-                                        selectInput("file_type", "Type of file:",
-                                                    list("text (csv)" = "text",
-                                                         "Excel" = "Excel",
-                                                         "SPSS" = "SPSS",
-                                                         "Stata" = "Stata",
-                                                         "SAS" = "SAS"),
-                                                    selected = "text"),
-                                        conditionalPanel(condition = "input.file_type=='text'",
-                                                         selectInput("upload_delim", "Delimiter:",
-                                                         list("Semicolon" = ";",
-                                                              "Tab" = "\t",
-                                                              "Comma" = ",",
-                                                              "Space" = " "),
-                                                          selected = "Semicolon")),
-                                        actionButton("submit_datafile_button",
-                                                     "Submit datafile")),
-                       conditionalPanel(condition = "input.data_input=='3'",
-                                        h5("Paste data below:"),
-                                        tags$textarea(id = "myData",
-                                                      placeholder = "Add data here",
-                                                      rows = 10,
-                                                      cols = 20, ""),
-                                        actionButton("submit_data_button",
-                                                     "Submit data"),
-                                        selectInput("text_delim", "Delimiter:",
-                                                    list("Semicolon" = ";",
-                                                         "Tab" = "\t",
-                                                         "Comma" = ",",
-                                                         "Space" = " "),
-                                                    selected = "Semicolon")
-                       )
-        ),
-      conditionalPanel(condition = "input.tabs=='ggplot' || input.tabs=='Plotly'",
-                       h4("Create visualization"),
-                       selectInput(inputId = "Type",
-                                   label = "Type of graph:",
-                                   choices = c("Boxplot", "Density", "Dot + Error", "Dotplot", "Histogram", "Scatter", "Violin"),
-                                   selected = "Violin"),
-                       selectInput("y_var", "Y-variable", choices = ""),
-                       conditionalPanel(condition = "input.Type!='Density' && input.Type!='Histogram'",
-                                        selectInput("x_var", "X-variable", choices = "")),
-                       selectInput("group", "Group (or colour)", choices = ""),
-                       selectInput("facet_row", "Facet Row", choices = ""),
-                       selectInput("facet_col", "Facet Column", choices = ""),
-                       conditionalPanel(condition = "input.Type == 'Boxplot' || input.Type == 'Violin' || input.Type == 'Dot + Error'",
-                                        checkboxInput(inputId = "jitter",
-                                                      label = strong("Show data points (jittered)"),
-                                                      value = FALSE)
-                       ),
-                       conditionalPanel(condition = "input.Type == 'Boxplot'",
-                                        checkboxInput(inputId = "notch",
-                                                      label = strong("Notched box plot"),
-                                                      value = FALSE)
-                       ),
-                       conditionalPanel(condition = "input.Type == 'Density' || input.Type == 'Histogram'",
-                                        sliderInput("alpha", "Opacity:", min = 0, max = 1, value = 0.8)
-                       ),
-                       conditionalPanel(condition = "input.Type == 'Histogram' || input.Type=='Dotplot'",
-                                        numericInput("binwidth", "Binwidth:", value = 1)
-                       ),
-                       conditionalPanel(condition = "input.Type == 'Dotplot'",
-                                        selectInput("dot_dir", "Direction stack:",
-                                                    choice = c("up",
-                                                         "down",
-                                                         "center",
-                                                         "centerwhole"),
-                                                    selected = "up")
-                       ),
-                       conditionalPanel(condition = "input.Type == 'Density' || input.Type == 'Violin'",
-                                        sliderInput(inputId = "bw_adjust",
-                                                    label = "Bandwidth adjustment:",
-                                                    min = 0.01, max = 2, value = 1, step = 0.1)
-                       ),
-                       conditionalPanel(condition = "input.Type == 'Scatter'",
-                         checkboxInput(inputId = "line",
-                                       label = strong("Show regression line"),
-                                       value = FALSE),
-                         conditionalPanel(condition = "input.line == true",
-                                          selectInput("smooth", "Smoothening function", choices = c("lm", "loess", "gam"))
-                         ),
-                         conditionalPanel(condition = "input.line == true",
-                                          checkboxInput(inputId = "se",
-                                                        label = strong("Show confidence interval"),
-                                                        value = FALSE)
-                         )
-                       )
-        ),
-        conditionalPanel(condition = "input.tabs=='R-code'",
-                           h4("R-code to build graph")
-                        ),
-        conditionalPanel(condition = "input.tabs=='Info'",
-                       h4("Info")
-      )
+      conditionalPanel(
+        condition = "input.tabs=='Data upload'",
+        h4("Data upload"),
+        radioButtons(
+          "data_input", "",
+          choices = if (is.data.frame(dataset)) {
+            list("Load sample data" = 1,
+                 "Upload text file" = 2,
+                 "Paste data" = 3,
+                 "Data passed through R environment" = 4)
+              } else {
+              list("Load sample data" = 1,
+                   "Upload file" = 2,
+                   "Paste data" = 3)
+              },
+          selected = if (is.data.frame(dataset)) 4 else 1),
+        conditionalPanel(
+          condition = "input.data_input=='1'",
+          h5("dataset 'mpg' from library(ggplot2) loaded")
+          ),
+        conditionalPanel(
+          condition = "input.data_input=='2'",
+          h5("Upload file: "),
+          fileInput("upload", "", multiple = FALSE),
+          selectInput("file_type", "Type of file:",
+                      list("text (csv)" = "text",
+                           "Excel" = "Excel",
+                           "SPSS" = "SPSS",
+                           "Stata" = "Stata",
+                           "SAS" = "SAS"),
+                      selected = "text"),
+          conditionalPanel(
+            condition = "input.file_type=='text'",
+            selectInput("upload_delim", "Delimiter:",
+                        list("Semicolon" = ";",
+                             "Tab" = "\t",
+                             "Comma" = ",",
+                             "Space" = " "),
+                        selected = "Semicolon")),
+          actionButton("submit_datafile_button",
+                       "Submit datafile")),
+        conditionalPanel(
+          condition = "input.data_input=='3'",
+          h5("Paste data below:"),
+          tags$textarea(id = "data_paste",
+                        placeholder = "Add data here",
+                        rows = 10,
+                        cols = 20, ""),
+          actionButton("submit_data_button", "Submit data"),
+          selectInput("text_delim", "Delimiter:",
+                      list("Semicolon" = ";",
+                           "Tab" = "\t",
+                           "Comma" = ",",
+                           "Space" = " "),
+                      selected = "Semicolon")
+        )
       ),
+      conditionalPanel(
+        condition = "input.tabs=='ggplot' || input.tabs=='Plotly'",
+        h4("Create visualization"),
+        selectInput(inputId = "Type",
+                    label = "Type of graph:",
+                    choices = c("Boxplot", "Density", "Dot + Error",
+                                "Dotplot", "Histogram", "Scatter", "Violin"),
+                    selected = "Violin"),
+        selectInput("y_var", "Y-variable", choices = ""),
+        conditionalPanel(
+          condition = "input.Type!='Density' && input.Type!='Histogram'",
+          selectInput("x_var", "X-variable", choices = "")
+        ),
+        selectInput("group", "Group (or colour)", choices = ""),
+        selectInput("facet_row", "Facet Row", choices = ""),
+        selectInput("facet_col", "Facet Column", choices = ""),
+        conditionalPanel(
+          condition = "input.Type == 'Boxplot' || input.Type == 'Violin' ||
+          input.Type == 'Dot + Error'",
+          checkboxInput(inputId = "jitter",
+                        label = strong("Show data points (jittered)"),
+                        value = FALSE)
+        ),
+        conditionalPanel(
+          condition = "input.Type == 'Boxplot'",
+          checkboxInput(inputId = "notch",
+                        label = strong("Notched box plot"),
+                        value = FALSE)
+        ),
+        conditionalPanel(
+          condition = "input.Type == 'Density' || input.Type == 'Histogram'",
+          sliderInput("alpha", "Opacity:", min = 0, max = 1, value = 0.8)
+        ),
+        conditionalPanel(
+          condition = "input.Type == 'Histogram' || input.Type=='Dotplot'",
+          numericInput("binwidth", "Binwidth:", value = 1)
+        ),
+        conditionalPanel(
+          condition = "input.Type == 'Dotplot'",
+          selectInput("dot_dir", "Direction stack:",
+                      choice = c("up", "down", "center", "centerwhole"),
+                      selected = "up")
+        ),
+        conditionalPanel(
+          condition = "input.Type == 'Density' || input.Type == 'Violin'",
+          sliderInput(inputId = "bw_adjust",
+                      label = "Bandwidth adjustment:",
+                      min = 0.01, max = 2, value = 1, step = 0.1)
+        ),
+        conditionalPanel(
+          condition = "input.Type == 'Scatter'",
+          checkboxInput(inputId = "line",
+                        label = strong("Show regression line"),
+                        value = FALSE),
+          conditionalPanel(
+            condition = "input.line == true",
+            selectInput("smooth", "Smoothening function",
+                        choices = c("lm", "loess", "gam"))
+          ),
+          conditionalPanel(
+            condition = "input.line == true",
+            checkboxInput(inputId = "se",
+                          label = strong("Show confidence interval"),
+                          value = FALSE)
+          )
+        )
+      ),
+      conditionalPanel(
+        condition = "input.tabs=='R-code'",
+        h4("R-code to build graph")
+      ),
+      conditionalPanel(
+        condition = "input.tabs=='Info'",
+        h4("Info")
+      )
+    ),
     h6("For more info see the 'Info'-tab or visit",
        a("https://github.com/gertstulp/ggplotgui",
          href = "https://github.com/gertstulp/ggplotgui")),
@@ -145,219 +163,268 @@ ggplot_shiny <- function( dataset = NA ) {
     #####################################
 
     mainPanel(width = 6,
-      tabsetPanel(type = "tabs",
-                  # Data upload tab
-                  tabPanel("Data upload", dataTableOutput("out_table")),
-                  tabPanel("ggplot", mainPanel(downloadButton("download_plot_PDF", "Download pdf of figure"),
-                                              plotOutput("out_ggplot"))),
-                  tabPanel("Plotly", plotlyOutput("out_plotly")),
-                  tabPanel("R-code", verbatimTextOutput("out_r_code")),
-                  tabPanel("Info", h3("Background"),
-                                    p(a("R", href = "https://www.r-project.org/"), "is amazing, but daunting for many.
-                                    The programming style of R, compared to the point-and-click style of typical
-                                    software, is a hurdle for many. Perhaps particularly so for those in the social
-                                    sciences, whose statistical needs are often met by other software packages.
-                                    Yet such packages are often very limited in terms of their options to visualize
-                                    the data at hand. I believe that the amazing visualization-capabilities of R
-                                    might be one way to get more people to use it. To lower the barrier to start using
-                                    R, this package allows users to visualize their data using an online graphical
-                                    user interface (GUI) that makes use of R's visualization package",
-                                    a("ggplot", href = "http://ggplot2.org/"), ". There are two ways of using this
-                                    functionality: 1) online, where users can upload their data and visualize it
-                                    without needing R, by visiting ",
-                                    a("this website", href = "https://site.shinyserver.dck.gmw.rug.nl/ggplotgui/"),
-                                    "; 2) from within the R-environment (by using the ", code("ggplot_shiny()"),
-                                    "function). Importantly, the R-code will also be provided such that the user
-                                    can recreate the graphs within the R-environment. The main aim (or hope) is to get
-                                    more people using R and its wonderful (graphing) capabilities."),
-                                    h3("App info"),
-                                    p("This application was built in ", a("R", href = "https://www.r-project.org/"),
-                                    "version 3.3.2, and uses the following packages: ",
-                                    a("ggplot2", href = "http://ggplot2.tidyverse.org/"), ",",
-                                    a("Shiny", href = "http://www.rstudio.com/shiny/"), ",",
-                                    a("stringr", href = "http://stringr.tidyverse.org/"), ",",
-                                    a("plotly", href = "https://plot.ly/r/"), ",",
-                                    a("readr", href = "http://readr.tidyverse.org/"), ",",
-                                    a("readxl", href = "http://readxl.tidyverse.org/"), ",",
-                                    a("haven", href = "http://haven.tidyverse.org/"), ", and",
-                                    a("RColorBrewer.", href = "http://stringr.tidyverse.org/")),
-                                    p("This application was created by ",
-                                    a("Gert Stulp", href = "http://www.gertstulp.com/"),
-                                    ". Please do report bugs and send feature requests to ",
-                                    a("g.stulp[at]rug.nl", href = "mailto:g.stulp@rug.nl"),
-                                    ". Visit ",
-                                    a("https://github.com/gertstulp/ggplotgui",
-                                      href = "https://github.com/gertstulp/ggplotgui"),
-                                      "for further description and code."),
-                                    h3("Acknowledgements"),
-                                    p("Thanks to Wilmer Joling for setting up the ",
-                                      a("website", href = "https://site.shinyserver.dck.gmw.rug.nl/ggplotgui/"),
-                                      "which is based on the magical but incomprehensible",
-                                      a("docker", href = "https://www.docker.com/"),
-                                      ". Thanks to ",
-                                      a("Hadley Wicham", href = "http://hadley.nz/"),
-                                      " for making such good packages (and open access
-                                      books describing them), that allow even low-skilled
-                                      and low-talented programmers like myself to be able to
-                                      contribute to R")
-                                      ),
-                  id = "tabs"
-                  )
-
-      ),
+      tabsetPanel(
+        type = "tabs",
+        tabPanel("Data upload", dataTableOutput("out_table")),
+        tabPanel("ggplot",
+                 mainPanel(
+                   downloadButton("download_plot_PDF",
+                                  "Download pdf of figure"),
+                   plotOutput("out_ggplot"))
+                ),
+        tabPanel("Plotly", plotlyOutput("out_plotly")),
+        tabPanel("R-code", verbatimTextOutput("out_r_code")),
+        tabPanel("Info",
+h3("Background"),
+p(
+  a("R", href = "https://www.r-project.org/"), "is amazing, but daunting
+  for many. The programming style of R, compared to the point-and-click
+  style of typical software, is a hurdle for many. Perhaps particularly so
+  for those in the social sciences, whose statistical needs are often met by
+  other software packages. Yet such packages are often very limited in terms
+  of their options to visualize the data at hand. I believe that the amazing
+  visualization-capabilities of R might be one way to get more people to use it.
+  To lower the barrier to start using R, this package allows users to visualize
+  their data using an online graphical user interface (GUI) that makes use of
+  R's visualization package",
+  a("ggplot", href = "http://ggplot2.org/"),
+  ". There are two ways of using this functionality: 1) online, where users
+  can upload their data and visualize it without needing R, by visiting ",
+  a("this website",
+    href = "https://site.shinyserver.dck.gmw.rug.nl/ggplotgui/"),
+  "; 2) from within the R-environment (by using the ", code("ggplot_shiny()"),
+  "function). Importantly, the R-code will also be provided such that the user
+  can recreate the graphs within the R-environment. The main aim (or hope) is
+  to get more people using R and its wonderful (graphing) capabilities."
+),
+h3("App info"),
+p(
+  "This application was built in ",
+  a("R", href = "https://www.r-project.org/"),
+  "version 3.3.2, and uses the following packages: ",
+  a("ggplot2", href = "http://ggplot2.tidyverse.org/"), ",",
+  a("Shiny", href = "http://www.rstudio.com/shiny/"), ",",
+  a("stringr", href = "http://stringr.tidyverse.org/"), ",",
+  a("plotly", href = "https://plot.ly/r/"), ",",
+  a("readr", href = "http://readr.tidyverse.org/"), ",",
+  a("readxl", href = "http://readxl.tidyverse.org/"), ",",
+  a("haven", href = "http://haven.tidyverse.org/"), ", and",
+  a("RColorBrewer.", href = "http://stringr.tidyverse.org/")
+),
+p(
+  "This application was created by ",
+  a("Gert Stulp", href = "http://www.gertstulp.com/"),
+  ". Please do report bugs and send feature requests to ",
+  a("g.stulp[at]rug.nl", href = "mailto:g.stulp@rug.nl"),
+  ". Visit ",
+  a("https://github.com/gertstulp/ggplotgui",
+    href = "https://github.com/gertstulp/ggplotgui"),
+  "for further description and code."
+),
+h3("Acknowledgements"),
+p(
+  "Thanks to Wilmer Joling for setting up the ",
+  a("website", href = "https://site.shinyserver.dck.gmw.rug.nl/ggplotgui/"),
+  "which is based on the magical but incomprehensible",
+  a("docker", href = "https://www.docker.com/"),
+  ". Thanks to ",
+  a("Hadley Wicham", href = "http://hadley.nz/"),
+  " for making such good packages (and open access
+  books describing them), that allow even low-skilled
+  and low-talented programmers like myself to be able to
+  contribute to R"
+)
+        ),
+        id = "tabs"
+      )
+    ),
 
     #####################################
     ######### AESTHETICS TAB ############
     #####################################
 
-    conditionalPanel(condition = "input.tabs=='ggplot' || input.tabs=='Plotly'",
-                       sidebarPanel(width = 3,
-                       h4("Change aesthetics"),
-                       tabsetPanel(
-                         tabPanel("Text",
-                       checkboxInput(inputId = "label_axes",
-                                     label = strong("Change labels axes"),
-                                     value = FALSE),
-                       conditionalPanel(condition = "input.label_axes == true",
-                                        textInput("lab_x", "X-axis:", value = "label x-axis")
-                       ),
-                       conditionalPanel(condition = "input.label_axes == true",
-                                        textInput("lab_y", "Y-axis:", value = "label y-axis")
-                       ),
-                       checkboxInput(inputId = "add_title",
-                                     label = strong("Add title"),
-                                     value = FALSE),
-                       conditionalPanel(condition = "input.add_title == true",
-                                        textInput("title", "Title:", value = "Title")
-                       ),
-                       checkboxInput(inputId = "change_font_size",
-                                     label = strong("Change font size"),
-                                     value = FALSE),
-                       conditionalPanel(condition = "input.change_font_size == true",
-                                        numericInput("font_size_titles", "Size axis titles:", value = 12),
-                                        numericInput("font_size_axes", "Size axis labels:", value = 10)),
-                       checkboxInput(inputId = "rotate_text_x",
-                                     label = strong("Rotate text x-axis"),
-                                     value = FALSE),
-                       checkboxInput(inputId = "change_font",
-                                     label = strong("Change font"),
-                                     value = FALSE),
-                       conditionalPanel(condition = "input.change_font == true",
-                                        selectInput("font", "Font",
-                                 choices = c("Courier",
-                                              "Helvetica",
-                                              "Times"),
-                                              selected = "Helvetica"))
-                        ),
-                     tabPanel("Theme",
-                              conditionalPanel(condition="input.group != '.'",
-                                               checkboxInput(inputId = "change_colour",
-                                                             label = strong("Change colours"),
-                                                             value = FALSE),
-                                 conditionalPanel(condition="input.change_colour",
-                                                  selectInput(inputId = "palette",
-                                                                label = strong("Select palette"),
-                                                                choices = list(
-                                                                  "Qualitative" = c("Accent",
-                                                                                    "Dark2",
-                                                                                    "Paired",
-                                                                                    "Pastel1",
-                                                                                    "Pastel2",
-                                                                                    "Set1",
-                                                                                    "Set2",
-                                                                                    "Set3"),
-                                                                  "Diverging" = c("BrBG",
-                                                                                  "PiYG",
-                                                                                  "PRGn",
-                                                                                  "PuOr",
-                                                                                  "RdBu",
-                                                                                  "RdGy",
-                                                                                  "RdYlBu",
-                                                                                  "RdYlGn",
-                                                                                  "Spectral"),
-                                                                  "Sequential" = c("Blues",
-                                                                                   "BuGn",
-                                                                                   "BuPu",
-                                                                                   "GnBu",
-                                                                                   "Greens",
-                                                                                   "Greys",
-                                                                                   "Oranges",
-                                                                                   "OrRd",
-                                                                                   "PuBu",
-                                                                                   "PuBuGn",
-                                                                                   "PuRd",
-                                                                                   "Purples",
-                                                                                   "RdPu",
-                                                                                   "Reds",
-                                                                                   "YlGn",
-                                                                                   "YlGnBu",
-                                                                                   "YlOrBr",
-                                                                                   "YlOrRd")),
-                                                                selected = "set1")
-
-                              )
-                              ),
-                              conditionalPanel(condition="input.jitter",
-                                checkboxInput("change_jitter", strong("Change look jitter"), FALSE),
-                                conditionalPanel(condition="input.change_jitter",
-                                                 textInput("col_jitter", "Colour:", value = "black"),
-                                                 numericInput("size_jitter", "Size:", value = 1),
-                                                 sliderInput("opac_jitter", "Opacity:",
-                                                             min = 0, max = 1, value = 0.5, step = 0.01),
-                                                 sliderInput("width_jitter", "Width jitter:",
-                                                             min = 0, max = 1, value = 0.25, step = 0.01)
-                                )
-                              ),
-                              checkboxInput("change_gridlines", strong("Remove gridlines"), FALSE),
-                              conditionalPanel(condition="input.change_gridlines",
-                                               checkboxInput("gridlines_major", strong("Remove major gridlines"), FALSE),
-                                               checkboxInput("gridlines_minor", strong("Remove minor gridlines"), FALSE)
-                              ),
-                              selectInput("theme", "Theme",
-                                          choices = c("bw" = "theme_bw()",
-                                                      "classic" = "theme_classic()",
-                                                      "dark" = "theme_dark()",
-                                                      "grey" = "theme_grey()",
-                                                      "light" = "theme_light()",
-                                                      "line_draw" = "theme_linedraw()",
-                                                      "minimal" = "theme_minimal()"),
-                                          selected = "theme_bw()")),
-                     tabPanel("Legend",
-                              conditionalPanel(condition="input.group != '.'",
-                                               radioButtons(inputId = "change_legend",
-                                                             label = NULL,
-                                                             choices = c("Keep legend as it is",
-                                                                         "Remove legend",
-                                                                         "Change legend"),
-                                                             selected = "Keep legend as it is"),
-                                               conditionalPanel(condition="input.change_legend=='Change legend'",
-                                                             textInput("legend_title", "Title legend:", value = "title legend"),
-                                                             selectInput("pos_leg", "Position legend",
-                                                                         choices = c("right",
-                                                                                     "left",
-                                                                                     "top",
-                                                                                     "bottom"))
-                                                             )
-                                      )
-                     ),
-                     tabPanel("Size",
-                              checkboxInput("fig_size", strong("Adjust plot size on screen"), FALSE),
-                              conditionalPanel(condition="input.fig_size",
-                                               numericInput("fig_height", "Plot height (# pixels): ", value = 480),
-                                               numericInput("fig_width", "Plot width (# pixels):", value = 480)
-                              ),
-                              checkboxInput("fig_size_download", strong("Adjust plot size for download"), FALSE),
-                              conditionalPanel(condition="input.fig_size_download",
-                                               numericInput("fig_height_download", "Plot height (in cm):", value = 14),
-                                               numericInput("fig_width_download", "Plot width (in cm):", value = 14)
-                              )
-                     )
-                     )
-                       )
-
-    )
-  )
-
+    conditionalPanel(
+      condition = "input.tabs=='ggplot' || input.tabs=='Plotly'",
+      sidebarPanel(
+        width = 3,
+        h4("Change aesthetics"),
+        tabsetPanel(
+          tabPanel(
+            "Text",
+            checkboxInput(inputId = "label_axes",
+                          label = strong("Change labels axes"),
+                          value = FALSE),
+            conditionalPanel(
+              condition = "input.label_axes == true",
+              textInput("lab_x", "X-axis:", value = "label x-axis")
+            ),
+            conditionalPanel(
+              condition = "input.label_axes == true",
+              textInput("lab_y", "Y-axis:", value = "label y-axis")
+            ),
+            checkboxInput(inputId = "add_title",
+                          label = strong("Add title"),
+                          value = FALSE),
+            conditionalPanel(
+              condition = "input.add_title == true",
+              textInput("title", "Title:", value = "Title")
+            ),
+            checkboxInput(inputId = "change_font_size",
+                          label = strong("Change font size"),
+                          value = FALSE),
+            conditionalPanel(
+              condition = "input.change_font_size == true",
+              numericInput("font_size_titles",
+                           "Size axis titles:",
+                           value = 12),
+              numericInput("font_size_axes",
+                           "Size axis labels:",
+                           value = 10)
+            ),
+            checkboxInput(inputId = "rotate_text_x",
+                          label = strong("Rotate text x-axis"),
+                          value = FALSE),
+            checkboxInput(inputId = "change_font",
+                          label = strong("Change font"),
+                          value = FALSE),
+            conditionalPanel(
+              condition = "input.change_font == true",
+              selectInput("font", "Font",
+                          choices = c("Courier",
+                                      "Helvetica",
+                                      "Times"),
+                          selected = "Helvetica")
+            )
+          ),
+          tabPanel(
+            "Theme",
+            conditionalPanel(
+              condition = "input.group != '.'",
+              checkboxInput(inputId = "change_colour",
+                            label = strong("Change colours"),
+                            value = FALSE),
+              conditionalPanel(
+                condition = "input.change_colour",
+                selectInput(inputId = "palette",
+                            label = strong("Select palette"),
+                            choices = list(
+                              "Qualitative" = c("Accent",
+                                                "Dark2",
+                                                "Paired",
+                                                "Pastel1",
+                                                "Pastel2",
+                                                "Set1",
+                                                "Set2",
+                                                "Set3"),
+                              "Diverging" = c("BrBG",
+                                              "PiYG",
+                                              "PRGn",
+                                              "PuOr",
+                                              "RdBu",
+                                              "RdGy",
+                                              "RdYlBu",
+                                              "RdYlGn",
+                                              "Spectral"),
+                              "Sequential" = c("Blues",
+                                               "BuGn",
+                                               "BuPu",
+                                               "GnBu",
+                                               "Greens",
+                                               "Greys",
+                                               "Oranges",
+                                               "OrRd",
+                                               "PuBu",
+                                               "PuBuGn",
+                                               "PuRd",
+                                               "Purples",
+                                               "RdPu",
+                                               "Reds",
+                                               "YlGn",
+                                               "YlGnBu",
+                                               "YlOrBr",
+                                               "YlOrRd")),
+                            selected = "set1")
+              )
+            ),
+            conditionalPanel(
+              condition = "input.jitter",
+              checkboxInput("change_jitter",
+                            strong("Change look jitter"), FALSE),
+              conditionalPanel(
+                condition = "input.change_jitter",
+                textInput("col_jitter", "Colour:", value = "black"),
+                numericInput("size_jitter", "Size:", value = 1),
+                sliderInput("opac_jitter", "Opacity:",
+                            min = 0, max = 1, value = 0.5, step = 0.01),
+                sliderInput("width_jitter", "Width jitter:",
+                            min = 0, max = 1, value = 0.25, step = 0.01)
+              )
+            ),
+            checkboxInput("change_gridlines",
+                          strong("Remove gridlines"), FALSE),
+            conditionalPanel(
+              condition = "input.change_gridlines",
+              checkboxInput("gridlines_major",
+                            strong("Remove major gridlines"), FALSE),
+              checkboxInput("gridlines_minor",
+                            strong("Remove minor gridlines"), FALSE)
+            ),
+            selectInput("theme", "Theme",
+                        choices = c("bw" = "theme_bw()",
+                                    "classic" = "theme_classic()",
+                                    "dark" = "theme_dark()",
+                                    "grey" = "theme_grey()",
+                                    "light" = "theme_light()",
+                                    "line_draw" = "theme_linedraw()",
+                                    "minimal" = "theme_minimal()"),
+                        selected = "theme_bw()")
+          ),
+          tabPanel(
+            "Legend",
+            conditionalPanel(
+              condition = "input.group != '.'",
+              radioButtons(inputId = "change_legend",
+                           label = NULL,
+                           choices = c("Keep legend as it is",
+                                       "Remove legend",
+                                       "Change legend"),
+                           selected = "Keep legend as it is"),
+              conditionalPanel(
+                condition = "input.change_legend=='Change legend'",
+                textInput("legend_title", "Title legend:",
+                          value = "title legend"),
+                selectInput("pos_leg", "Position legend",
+                            choices = c("right",
+                                        "left",
+                                        "top",
+                                        "bottom"))
+              )
+            )
+          ),
+          tabPanel(
+            "Size",
+            checkboxInput("fig_size",
+                          strong("Adjust plot size on screen"), FALSE),
+            conditionalPanel(
+              condition = "input.fig_size",
+              numericInput("fig_height", "Plot height (# pixels): ",
+                           value = 480),
+              numericInput("fig_width", "Plot width (# pixels):", value = 480)
+            ),
+            checkboxInput("fig_size_download",
+                          strong("Adjust plot size for download"), FALSE),
+            conditionalPanel(
+              condition = "input.fig_size_download",
+              numericInput("fig_height_download",
+                           "Plot height (in cm):", value = 14),
+              numericInput("fig_width_download",
+                           "Plot width (in cm):", value = 14)
+            )
+          )
+        ) # Close tabsetPanel
+      ) # Close sidebarPanel
+    ) # Close conditionalPanel
+  ) # Close fluidPage
 
   server <- function(input, output, session) {
 
@@ -367,12 +434,27 @@ ggplot_shiny <- function( dataset = NA ) {
 
     observe({
       nms <- names(df_shiny())
-      nms_cont <- names(Filter(function(x) is.integer(x) || is.numeric(x) || is.double(x), df_shiny())) # Make list of variables that are not factors
-      nms_fact <- names(Filter(function(x) is.factor(x) || is.logical(x) || is.character(x), df_shiny())) # Make list of variables that are not factors
+      # Make list of variables that are not factors
+      nms_cont <- names(Filter(function(x) is.integer(x) ||
+                                 is.numeric(x) ||
+                                 is.double(x),
+                               df_shiny()))
+
+      # Make list of variables that are not factors
+      nms_fact <- names(Filter(function(x) is.factor(x) ||
+                                 is.logical(x) ||
+                                 is.character(x),
+                               df_shiny()))
 
       avail_all <- c("No groups" = ".", nms)
-      avail_con <- if (identical(nms_cont, character(0))) c("No continuous vars available" = ".") else c(nms_cont)
-      avail_fac <- if (identical(nms_fact, character(0))) c("No factors available" = ".") else c("No groups" = ".", nms_fact)
+      avail_con <-
+        if (identical(nms_cont, character(0)))
+          c("No continuous vars available" = ".")
+        else c(nms_cont)
+      avail_fac <-
+        if (identical(nms_fact, character(0)))
+          c("No factors available" = ".")
+        else c("No groups" = ".", nms_fact)
 
       updateSelectInput(session, "y_var", choices = avail_con)
       updateSelectInput(session, "x_var", choices = c("No x-var" = "' '", nms))
@@ -399,7 +481,9 @@ ggplot_shiny <- function( dataset = NA ) {
         } else {
           isolate({
             if (input$file_type == "text") {
-              data <- read_delim(file_in$datapath, delim = input$text_delim, col_names = TRUE)
+              data <- read_delim(file_in$datapath,
+                                 delim = input$text_delim,
+                                 col_names = TRUE)
             } else if (input$file_type == "Excel") {
               data <- read_excel(file_in$datapath)
             } else if (input$file_type == "SPSS") {
@@ -412,18 +496,22 @@ ggplot_shiny <- function( dataset = NA ) {
           })
         }
       } else if (input$data_input == 3) {
-        if (input$myData=="") {
-          data <- data.frame(x = "Copy your data into the textbox, select the appropriate delimiter, and press 'Submit data'")
+        if (input$data_paste == "") {
+          data <- data.frame(x = "Copy your data into the textbox,
+                             select the appropriate delimiter, and
+                             press 'Submit data'")
         } else {
           if (input$submit_data_button == 0) {
             return(data.frame(x = "Press 'submit data' button"))
           } else {
             isolate({
-              data <- read_delim(input$myData, delim = input$text_delim, col_names = TRUE)
+              data <- read_delim(input$data_paste,
+                                 delim = input$text_delim,
+                                 col_names = TRUE)
             })
           }
         }
-      } else if(input$data_input == 4){
+      } else if (input$data_input == 4){
         data <- dataset
       }
       return(data)
@@ -437,7 +525,10 @@ ggplot_shiny <- function( dataset = NA ) {
 
       if (input$Type == "Histogram") {
         if (input$group != ".") {
-          p <- "ggplot(df, aes(x = input$y_var)) + geom_histogram(aes(fill = input$group), position = 'identity', alpha = input$alpha, binwidth = input$binwidth)"
+          p <-
+            "ggplot(df, aes(x = input$y_var)) +
+            geom_histogram(aes(fill = input$group), position = 'identity',
+            alpha = input$alpha, binwidth = input$binwidth)"
         } else if (input$group == ".") {
           p <- "ggplot(df, aes(x = input$y_var)) + geom_histogram(position = 'identity', alpha = input$alpha, binwidth = input$binwidth)"
         }
@@ -497,7 +588,7 @@ ggplot_shiny <- function( dataset = NA ) {
       # if title specified
       if (input$add_title) p <- paste(p, "+", "ggtitle('input$title')")
       # if legend specified
-      if (input$change_legend == 'Change legend') {
+      if (input$change_legend == "Change legend") {
         if (input$Type == "Histogram" || input$Type == "Density" || input$Type == "Dotplot") {
           p <- paste(p, "+", "labs(fill = 'input$legend_title')")
         } else {
@@ -516,26 +607,24 @@ ggplot_shiny <- function( dataset = NA ) {
 
       p <- paste(p, "+", input$theme)
 
-      if (input$change_font_size) theme_axis_title = "axis.title = element_text(size = input$font_size_titles)" else theme_axis_title = ""
-      if (input$change_font_size) theme_axis_text = "axis.text = element_text(size = input$font_size_axes)" else theme_axis_text = ""
-      if (input$change_font) theme_font = "text = element_text(family = 'input$font')" else theme_font = ""
-      if (input$rotate_text_x) theme_rotate = "axis.text.x = element_text(angle = 45, hjust = 1)" else theme_rotate = ""
+      if (input$change_font_size) theme_axis_title <- "axis.title = element_text(size = input$font_size_titles)" else theme_axis_title <- ""
+      if (input$change_font_size) theme_axis_text <- "axis.text = element_text(size = input$font_size_axes)" else theme_axis_text <- ""
+      if (input$change_font) theme_font <- "text = element_text(family = 'input$font')" else theme_font <- ""
+      if (input$rotate_text_x) theme_rotate <- "axis.text.x = element_text(angle = 45, hjust = 1)" else theme_rotate <- ""
       if (input$change_legend == "Keep legend as it is") {
-        theme_legend = ""
+        theme_legend <- ""
       } else if (input$change_legend == "Remove legend") {
-        theme_legend = "legend.position = 'none'"
+        theme_legend <- "legend.position = 'none'"
       } else {
-        theme_legend = "legend.position = 'input$pos_leg'"
+        theme_legend <- "legend.position = 'input$pos_leg'"
       }
-      if (input$gridlines_major) theme_grid_maj = "panel.grid.major = element_blank()" else theme_grid_maj = ""
-      if (input$gridlines_minor) theme_grid_min = "panel.grid.minor = element_blank()" else theme_grid_min = ""
-
-      panel.grid.major = element_blank()
+      if (input$gridlines_major) theme_grid_maj <- "panel.grid.major = element_blank()" else theme_grid_maj <- ""
+      if (input$gridlines_minor) theme_grid_min <- "panel.grid.minor = element_blank()" else theme_grid_min <- ""
 
       if (input$change_font_size ||
           input$change_font ||
           input$rotate_text_x ||
-          input$change_legend != 'Keep legend as it is' ||
+          input$change_legend != "Keep legend as it is" ||
           input$change_gridlines) {
         p <- paste(p, " + theme(\n    ",
                    theme_axis_title, ",\n    ",
@@ -587,7 +676,6 @@ ggplot_shiny <- function( dataset = NA ) {
       df_shiny()
     )
 
-    # Convert centimeters to pixels
     width <- reactive ({ input$fig_width })
     height <- reactive ({ input$fig_height })
     width_download <- reactive ({ input$fig_width_download })
@@ -633,7 +721,7 @@ ggplot_shiny <- function( dataset = NA ) {
       save_code <- paste("ggsave('my_graph.pdf', graph, width = ",
                           width_download(), ", height = ",
                           height_download(), ", unit = 'cm')",
-                          sep = '')
+                          sep = "")
 
       paste(begin_text,
             "\n\n",
@@ -659,15 +747,16 @@ ggplot_shiny <- function( dataset = NA ) {
 #####################################
 
   output$download_plot_PDF <- downloadHandler(
-      filename <- function() { paste('Figure_ggplotGUI_',
-                                     Sys.time(), '.pdf', sep = "") },
+      filename <- function() { paste("Figure_ggplotGUI_",
+                                     Sys.time(), ".pdf", sep = "")
+      },
       content <- function(file) {
         df <- df_shiny()
         p <- eval(parse(text = string_code()))
         ggsave(file, p, width = width_download(), height = height_download(), unit = "cm")
       },
-      contentType = 'application/pdf' # MIME type of the image
-    )
+      contentType = "application/pdf" # MIME type of the image
+  )
 
     # End R-session when browser closed
     session$onSessionEnded(stopApp)
