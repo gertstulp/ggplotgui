@@ -123,7 +123,7 @@ ggplot_shiny <- function( dataset = NA ) {
         ),
         conditionalPanel(
           condition = "input.Type == 'Density' || input.Type == 'Violin'",
-          sliderInput(inputId = "bw_adjust",
+          sliderInput(inputId = "adj_bw",
                       label = "Bandwidth adjustment:",
                       min = 0.01, max = 2, value = 1, step = 0.1)
         ),
@@ -269,26 +269,26 @@ p(
               condition = "input.add_title == true",
               textInput("title", "Title:", value = "Title")
             ),
-            checkboxInput(inputId = "change_font_size",
+            checkboxInput(inputId = "adj_fnt_sz",
                           label = strong("Change font size"),
                           value = FALSE),
             conditionalPanel(
-              condition = "input.change_font_size == true",
-              numericInput("font_size_titles",
+              condition = "input.adj_fnt_sz == true",
+              numericInput("fnt_sz_ttl",
                            "Size axis titles:",
                            value = 12),
-              numericInput("font_size_axes",
+              numericInput("fnt_sz_ax",
                            "Size axis labels:",
                            value = 10)
             ),
-            checkboxInput(inputId = "rotate_text_x",
+            checkboxInput(inputId = "rot_txt",
                           label = strong("Rotate text x-axis"),
                           value = FALSE),
-            checkboxInput(inputId = "change_font",
+            checkboxInput(inputId = "adj_fnt",
                           label = strong("Change font"),
                           value = FALSE),
             conditionalPanel(
-              condition = "input.change_font == true",
+              condition = "input.adj_fnt == true",
               selectInput("font", "Font",
                           choices = c("Courier",
                                       "Helvetica",
@@ -300,11 +300,11 @@ p(
             "Theme",
             conditionalPanel(
               condition = "input.group != '.'",
-              checkboxInput(inputId = "change_colour",
+              checkboxInput(inputId = "adj_colour",
                             label = strong("Change colours"),
                             value = FALSE),
               conditionalPanel(
-                condition = "input.change_colour",
+                condition = "input.adj_colour",
                 selectInput(inputId = "palette",
                             label = strong("Select palette"),
                             choices = list(
@@ -348,10 +348,10 @@ p(
             ),
             conditionalPanel(
               condition = "input.jitter",
-              checkboxInput("change_jitter",
+              checkboxInput("adj_jitter",
                             strong("Change look jitter"), FALSE),
               conditionalPanel(
-                condition = "input.change_jitter",
+                condition = "input.adj_jitter",
                 textInput("col_jitter", "Colour:", value = "black"),
                 numericInput("size_jitter", "Size:", value = 1),
                 sliderInput("opac_jitter", "Opacity:",
@@ -360,13 +360,13 @@ p(
                             min = 0, max = 1, value = 0.25, step = 0.01)
               )
             ),
-            checkboxInput("change_gridlines",
+            checkboxInput("adj_grd",
                           strong("Remove gridlines"), FALSE),
             conditionalPanel(
-              condition = "input.change_gridlines",
-              checkboxInput("gridlines_major",
+              condition = "input.adj_grd",
+              checkboxInput("grd_maj",
                             strong("Remove major gridlines"), FALSE),
-              checkboxInput("gridlines_minor",
+              checkboxInput("grd_min",
                             strong("Remove minor gridlines"), FALSE)
             ),
             selectInput("theme", "Theme",
@@ -383,14 +383,14 @@ p(
             "Legend",
             conditionalPanel(
               condition = "input.group != '.'",
-              radioButtons(inputId = "change_legend",
+              radioButtons(inputId = "adj_leg",
                            label = NULL,
                            choices = c("Keep legend as it is",
                                        "Remove legend",
                                        "Change legend"),
                            selected = "Keep legend as it is"),
               conditionalPanel(
-                condition = "input.change_legend=='Change legend'",
+                condition = "input.adj_leg=='Change legend'",
                 textInput("legend_title", "Title legend:",
                           value = "title legend"),
                 selectInput("pos_leg", "Position legend",
@@ -534,9 +534,9 @@ p(
         }
       } else if (input$Type == "Density") {
         if (input$group != ".") {
-          p <- "ggplot(df, aes(x = input$y_var)) + geom_density(aes(fill = input$group), position = 'identity', alpha = input$alpha, adjust = input$bw_adjust)"
+          p <- "ggplot(df, aes(x = input$y_var)) + geom_density(aes(fill = input$group), position = 'identity', alpha = input$alpha, adjust = input$adj_bw)"
         } else if (input$group == ".") {
-          p <- "ggplot(df, aes(x = input$y_var)) + geom_density(position = 'identity', alpha = input$alpha, adjust = input$bw_adjust)"
+          p <- "ggplot(df, aes(x = input$y_var)) + geom_density(position = 'identity', alpha = input$alpha, adjust = input$adj_bw)"
         }
       } else if (input$Type == "Boxplot") {
         if (input$group != ".") {
@@ -547,9 +547,9 @@ p(
         if (input$jitter) p <- paste(p, "+", "geom_jitter(size = input$size_jitter, alpha = input$opac_jitter, width = input$width_jitter)")
       } else if (input$Type == "Violin") {
         if (input$group != ".") {
-          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var, colour = input$group)) + geom_violin(adjust = input$bw_adjust)"
+          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var, colour = input$group)) + geom_violin(adjust = input$adj_bw)"
         } else if (input$group == ".") {
-          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var)) + geom_violin(adjust = input$bw_adjust)"
+          p <- "ggplot(df, aes(y = input$y_var, x = input$x_var)) + geom_violin(adjust = input$adj_bw)"
         }
         if (input$jitter) p <- paste(p, "+", "geom_jitter(size = input$size_jitter, alpha = input$opac_jitter, width = input$width_jitter, colour = 'input$col_jitter')")
       } else if (input$Type == "Dotplot") {
@@ -579,7 +579,7 @@ p(
 
       # if at least one facet column/row is specified, add it
       facets <- paste(input$facet_row, "~", input$facet_col)
-      if (facets != ". ~ .") p <- paste(p, "+", "facet_grid(", facets, ")")
+      if (facets != ". ~ .") p <- paste(p, "+", "facet_grd(", facets, ")")
 
       # if labels specified
       if (input$label_axes) {
@@ -588,7 +588,7 @@ p(
       # if title specified
       if (input$add_title) p <- paste(p, "+", "ggtitle('input$title')")
       # if legend specified
-      if (input$change_legend == "Change legend") {
+      if (input$adj_leg == "Change legend") {
         if (input$Type == "Histogram" || input$Type == "Density" || input$Type == "Dotplot") {
           p <- paste(p, "+", "labs(fill = 'input$legend_title')")
         } else {
@@ -597,7 +597,7 @@ p(
       }
 
       # if colour legend specified
-      if (input$change_colour) {
+      if (input$adj_colour) {
         if (input$Type == "Histogram" || input$Type == "Density" || input$Type == "Dotplot") {
           p <- paste(p, "+ scale_fill_brewer(palette = 'input$palette')")
         } else {
@@ -605,37 +605,39 @@ p(
         }
       }
 
+      # If a theme specified
       p <- paste(p, "+", input$theme)
 
-      if (input$change_font_size) theme_axis_title <- "axis.title = element_text(size = input$font_size_titles)" else theme_axis_title <- ""
-      if (input$change_font_size) theme_axis_text <- "axis.text = element_text(size = input$font_size_axes)" else theme_axis_text <- ""
-      if (input$change_font) theme_font <- "text = element_text(family = 'input$font')" else theme_font <- ""
-      if (input$rotate_text_x) theme_rotate <- "axis.text.x = element_text(angle = 45, hjust = 1)" else theme_rotate <- ""
-      if (input$change_legend == "Keep legend as it is") {
-        theme_legend <- ""
-      } else if (input$change_legend == "Remove legend") {
-        theme_legend <- "legend.position = 'none'"
-      } else {
-        theme_legend <- "legend.position = 'input$pos_leg'"
-      }
-      if (input$gridlines_major) theme_grid_maj <- "panel.grid.major = element_blank()" else theme_grid_maj <- ""
-      if (input$gridlines_minor) theme_grid_min <- "panel.grid.minor = element_blank()" else theme_grid_min <- ""
-
-      if (input$change_font_size ||
-          input$change_font ||
-          input$rotate_text_x ||
-          input$change_legend != "Keep legend as it is" ||
-          input$change_gridlines) {
-        p <- paste(p, " + theme(\n    ",
-                   theme_axis_title, ",\n    ",
-                   theme_axis_text, ",\n    ",
-                   theme_rotate, ",\n    ",
-                   theme_font, ",\n    ",
-                   theme_grid_maj, ",\n    ",
-                   theme_grid_min, ",\n    ",
-                   theme_legend, ",\n",
-                   "  )",
-                   sep = ""
+      # If theme features are specified
+      if (input$adj_fnt_sz ||
+          input$adj_fnt ||
+          input$rot_txt ||
+          input$adj_leg != "Keep legend as it is" ||
+          input$adj_grd) {
+        p <- paste(
+          p,
+          paste(
+            " + theme(\n    ",
+            if (input$adj_fnt_sz)
+"axis.title = element_text(size = input$fnt_sz_ttl),\n    ",
+            if (input$adj_fnt_sz)
+"axis.text = element_text(size = input$fnt_sz_ax),\n    ",
+            if (input$adj_fnt)
+"text = element_text(family = 'input$font'),\n    ",
+            if (input$rot_txt)
+"axis.text.x = element_text(angle = 45, hjust = 1),\n    ",
+            if (input$adj_leg == "Remove legend")
+"legend.position = 'none',\n    ",
+            if (input$adj_leg == "Change legend")
+"legend.position = 'input$pos_leg',\n    ",
+            if (input$grd_maj)
+"panel.grid.major = element_blank(),\n    ",
+            if (input$grd_min)
+"panel.grid.minor = element_blank(),\n    ",
+")",
+            sep = ""
+          ),
+          sep = ""
         )
       }
 
@@ -645,7 +647,7 @@ p(
       p <- str_replace_all(p, "input\\$group", input$group)
       p <- str_replace_all(p, "input\\$notch", as.character(input$notch))
       p <- str_replace_all(p, "input\\$binwidth", as.character(input$binwidth))
-      p <- str_replace_all(p, "input\\$bw_adjust", as.character(input$bw_adjust))
+      p <- str_replace_all(p, "input\\$adj_bw", as.character(input$adj_bw))
       p <- str_replace_all(p, "input\\$dot_dir", as.character(input$dot_dir))
       p <- str_replace_all(p, "input\\$alpha", as.character(input$alpha))
       p <- str_replace_all(p, "input\\$size_jitter", as.character(input$size_jitter))
@@ -656,13 +658,13 @@ p(
       p <- str_replace_all(p, "input\\$lab_y", as.character(input$lab_y))
       p <- str_replace_all(p, "input\\$title", as.character(input$title))
       p <- str_replace_all(p, "input\\$palette", as.character(input$palette))
-      p <- str_replace_all(p, "input\\$font_size_titles", as.character(input$font_size_titles))
-      p <- str_replace_all(p, "input\\$font_size_axes", as.character(input$font_size_axes))
+      p <- str_replace_all(p, "input\\$fnt_sz_ttl", as.character(input$fnt_sz_ttl))
+      p <- str_replace_all(p, "input\\$fnt_sz_ax", as.character(input$fnt_sz_ax))
       p <- str_replace_all(p, "input\\$font", as.character(input$font))
       p <- str_replace_all(p, "input\\$legend_title", as.character(input$legend_title))
       p <- str_replace_all(p, "input\\$pos_leg", as.character(input$pos_leg))
-      p <- str_replace_all(p, "    ,\n", "")
-      p <- str_replace_all(p, "\\),\n  \\)", "\\)\n  \\)")
+      #p <- str_replace_all(p, "    ,\n", "")
+      p <- str_replace_all(p, ",\n    \\)", "\n  \\)")
 
       p
     })
