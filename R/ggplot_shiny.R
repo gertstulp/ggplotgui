@@ -22,7 +22,7 @@ ggplot_shiny <- function( dataset = NA ) {
     headerPanel("ggplot GUI"),
     sidebarPanel(width = 3,
       conditionalPanel(condition = "input.tabs=='Data upload'",
-                       h4("Enter data"),
+                       h4("Data upload"),
                        radioButtons( "data_input", "",
                                     choices = if (is.data.frame(dataset)) {
                                       list("Load sample data" = 1,
@@ -131,7 +131,10 @@ ggplot_shiny <- function( dataset = NA ) {
         ),
         conditionalPanel(condition = "input.tabs=='R-code'",
                            h4("R-code to build graph")
-                        )
+                        ),
+        conditionalPanel(condition = "input.tabs=='Info'",
+                       h4("Info")
+      )
       ),
     h6("For more info see the 'Info'-tab or visit",
        a("https://github.com/gertstulp/ggplotgui",
@@ -345,8 +348,8 @@ ggplot_shiny <- function( dataset = NA ) {
                               ),
                               checkboxInput("fig_size_download", strong("Adjust plot size for download"), FALSE),
                               conditionalPanel(condition="input.fig_size_download",
-                                               numericInput("fig_height_download", "Plot height (in cm):", value = 7),
-                                               numericInput("fig_width_download", "Plot width (in cm):", value = 7)
+                                               numericInput("fig_height_download", "Plot height (in cm):", value = 14),
+                                               numericInput("fig_width_download", "Plot width (in cm):", value = 14)
                               )
                      )
                      )
@@ -671,4 +674,3 @@ ggplot_shiny <- function( dataset = NA ) {
   }
   shinyApp(ui, server)
 }
-ggplot_shiny()
