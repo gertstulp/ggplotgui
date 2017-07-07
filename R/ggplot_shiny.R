@@ -312,7 +312,7 @@ p(
                             value = FALSE),
               conditionalPanel(
                 condition = "input.adj_col",
-                selectInput(inputId = "palette",
+                selectInput(inputId = "palet",
                             label = strong("Select palette"),
                             choices = list(
                               "Qualitative" = c("Accent",
@@ -605,7 +605,7 @@ p(
                    sep = "")
 
       # if colour legend specified
-      if (input$adj_col == "Change legend")
+      if (input$adj_col)
         p <- paste(p, "+ scale_",
                    if (gg_fil) "fill" else "colour",
                    "_brewer(palette = 'input$palet')",
@@ -668,7 +668,7 @@ p(
                "input\\$lab_x" = as.character(input$lab_x),
                "input\\$lab_y" = as.character(input$lab_y),
                "input\\$title" = as.character(input$title),
-               "input\\$palette" = as.character(input$palet),
+               "input\\$palet" = as.character(input$palet),
                "input\\$fnt_sz_ttl" = as.character(input$fnt_sz_ttl),
                "input\\$fnt_sz_ax" = as.character(input$fnt_sz_ax),
                "input\\$font" = as.character(input$font),
