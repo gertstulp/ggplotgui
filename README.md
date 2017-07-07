@@ -8,7 +8,7 @@ ggplotgui
 Quick overview
 ==============
 
-This package allows users to visualize their data using an online graphical user interface (GUI) that makes use of [R](https://www.r-project.org/)'s visualization package [ggplot](http://ggplot2.org/). There are two ways of using this functionality: 1) online, where users can upload their data and visualize it without needing R, by visiting this link: <https://site.shinyserver.dck.gmw.rug.nl/ggplotgui/>; 2) from within the R-environment (by using the ggplot\_shiny() function). In either case, R-code will be provided such that the user can recreate the graphs within the R-environment.
+This package allows users to visualize their data using an online graphical user interface (GUI) that makes use of [R](https://www.r-project.org/)'s visualization package [ggplot](http://ggplot2.org/). There are two ways of using this functionality: 1) online, where users can upload their data and visualize it without needing R, by visiting this link: <https://site.shinyserver.dck.gmw.rug.nl/ggplotgui/>; 2) from within the R-environment (by using the **ggplot\_shiny()** function). In either case, R-code will be provided such that the user can recreate the graphs within the R-environment.
 
 Background
 ==========
@@ -51,6 +51,11 @@ A ggplot-graph can be made through point and click (after data is loaded and thr
 An interactive version (through plotly) of the graph is displayed (the Plotly-tab) to allow for further exploration of the data: ![](man/figures/tab_plotly.png)
 
 Importantly, the R-code to recreate the graphs will be provided (in the R-code tab): ![](man/figures/tab_R-code.png)
+
+Current functionality
+=====================
+
+Currently, only widely used graphs are implemented: boxplots, density plots, dot + error plots, dotplots, histograms, scatter plots, and violin plots. Only a select number of aesthetic features can be changed. Please do report bugs and send feature requests.
 
 Acknowledgements
 ================
