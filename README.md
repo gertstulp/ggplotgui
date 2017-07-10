@@ -8,7 +8,7 @@ ggplotgui
 Quick overview
 ==============
 
-This package allows users to visualize their data using an online graphical user interface (GUI) that makes use of [R](https://www.r-project.org/)'s visualization package [ggplot](http://ggplot2.org/). There are two ways of using this functionality: 1) online, where users can upload their data and visualize it without needing R, by visiting this link: <https://site.shinyserver.dck.gmw.rug.nl/ggplotgui/>; 2) from within the R-environment (by using the **ggplot\_shiny()** function). In either case, R-code will be provided such that the user can recreate the graphs within the R-environment.
+This package allows users to visualize their data using an online graphical user interface (GUI) that makes use of [R](https://www.r-project.org/)'s visualization package [ggplot](http://ggplot2.org/). There are two ways of using this functionality: 1) online, where users can upload their data and visualize it without needing R, by visiting this link: <https://site.shinyserver.dck.gmw.rug.nl/ggplotgui/>; 2) from within the R-environment (by using the `ggplot_shiny()` function). In either case, R-code will be provided such that the user can recreate the graphs within the R-environment.
 
 Background
 ==========
@@ -19,9 +19,12 @@ Installation
 ============
 
 ``` r
-# In order to install the package, you'll need to use the "devtools"-package
+install.packages("ggplotgui")
+
+# In order to install the most recent version of this package, you'll need to use the "devtools"-package
 install.packages("devtools")
 devtools::install_github("gertstulp/ggplotgui")
+
 library("ggplotgui")
 ```
 
