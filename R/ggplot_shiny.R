@@ -490,7 +490,7 @@ p(
           isolate({
             if (input$file_type == "text") {
               data <- read_delim(file_in$datapath,
-                                 delim = input$text_delim,
+                                 delim = input$upload_delim,
                                  col_names = TRUE)
             } else if (input$file_type == "Excel") {
               data <- read_excel(file_in$datapath)
