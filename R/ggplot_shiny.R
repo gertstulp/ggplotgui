@@ -28,7 +28,7 @@ ggplot_shiny <- function( dataset = NA ) {
           "data_input", "",
           choices = if (is.data.frame(dataset)) {
             list("Load sample data" = 1,
-                 "Upload text file" = 2,
+                 "Upload file" = 2,
                  "Paste data" = 3,
                  "Data passed through R environment" = 4)
               } else {
@@ -50,7 +50,8 @@ ggplot_shiny <- function( dataset = NA ) {
                            "Excel" = "Excel",
                            "SPSS" = "SPSS",
                            "Stata" = "Stata",
-                           "SAS" = "SAS"),
+                           "SAS" = "SAS",
+                          "Rdata" = "Rdata"),
                       selected = "text"),
           conditionalPanel(
             condition = "input.file_type=='text'",
@@ -500,6 +501,8 @@ p(
               data <- read_dta(file_in$datapath)
             } else if (input$file_type == "SAS") {
               data <- read_sas(file_in$datapath)
+            } else if (input$file_type == "Rdata") {
+              data <- get(load(input$upload$datapath, envir = .GlobalEnv))  
             }
           })
         }
