@@ -60,9 +60,15 @@ ggplot_shiny <- function( dataset = NA ) {
                              "Tab" = "\t",
                              "Comma" = ",",
                              "Space" = " "),
-                        selected = "Semicolon")),
+                        selected = "Semicolon"),
+          selectInput("upload_dec", "Decimal mark:",
+                      list("Comma" = ",",
+                           "Point" = "."),
+                      selected = "Comma")
+          ),
           actionButton("submit_datafile_button",
-                       "Submit datafile")),
+                       "Submit datafile")
+          ),
         conditionalPanel(
           condition = "input.data_input=='3'",
           h5("Paste data below:"),
@@ -76,7 +82,11 @@ ggplot_shiny <- function( dataset = NA ) {
                            "Tab" = "\t",
                            "Comma" = ",",
                            "Space" = " "),
-                      selected = "Semicolon")
+                      selected = "Semicolon"),
+          selectInput("text_dec", "Decimal mark:",
+                      list("Comma" = ",",
+                           "Point" = "."),
+                      selected = "Comma")
         )
       ),
       conditionalPanel(
@@ -491,7 +501,8 @@ p(
           isolate({
             if (input$file_type == "text") {
               data <- read_delim(file_in$datapath,
-                                 delim = input$text_delim,
+                                 delim = input$upload_delim,
+                                 locale = locale(decimal_mark = input$upload_dec),
                                  col_names = TRUE)
             } else if (input$file_type == "Excel") {
               data <- read_excel(file_in$datapath)
@@ -516,6 +527,7 @@ p(
             isolate({
               data <- read_delim(input$data_paste,
                                  delim = input$text_delim,
+                                 locale = locale(decimal_mark = input$text_dec),
                                  col_names = TRUE)
             })
           }
