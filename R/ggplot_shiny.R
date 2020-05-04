@@ -13,6 +13,7 @@
 #' @importFrom plotly ggplotly plotlyOutput renderPlotly
 #' @importFrom stringr str_replace_all
 #' @importFrom readr read_delim
+#' @importFrom DT renderDT DTOutput
 
 
 #' @export
@@ -171,7 +172,7 @@ ggplot_shiny <- function( dataset = NA ) {
     mainPanel(width = 6,
       tabsetPanel(
         type = "tabs",
-        tabPanel("Data upload", dataTableOutput("out_table")),
+        tabPanel("Data upload", DT::DTOutput("out_table")),
         tabPanel("ggplot",
                  mainPanel(
                    downloadButton("download_plot_PDF",
@@ -234,7 +235,7 @@ p(
   "which is based on the magical but incomprehensible",
   a("docker", href = "https://www.docker.com/"),
   ". Thanks to ",
-  a("Hadley Wicham", href = "http://hadley.nz/"),
+  a("Hadley Wickham", href = "http://hadley.nz/"),
   " for making such good packages (and open access
   books describing them), that allow even low-skilled
   and low-talented programmers like myself to be able to
@@ -686,7 +687,7 @@ p(
 ###### GRAPHICAL/TABLE OUTPUT #######
 #####################################
 
-    output$out_table <- renderDataTable(
+    output$out_table <- DT::renderDT(
       df_shiny()
     )
 
