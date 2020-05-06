@@ -13,6 +13,7 @@
 #' @importFrom plotly ggplotly plotlyOutput renderPlotly
 #' @importFrom stringr str_replace_all
 #' @importFrom readr read_delim
+#' @importFrom DT renderDT DTOutput
 
 
 #' @export
@@ -59,9 +60,15 @@ ggplot_shiny <- function( dataset = NA ) {
                              "Tab" = "\t",
                              "Comma" = ",",
                              "Space" = " "),
-                        selected = "Semicolon")),
+                        selected = "Semicolon"),
+          selectInput("upload_dec", "Decimal mark:",
+                      list("Comma" = ",",
+                           "Point" = "."),
+                      selected = "Comma")
+          ),
           actionButton("submit_datafile_button",
-                       "Submit datafile")),
+                       "Submit datafile")
+          ),
         conditionalPanel(
           condition = "input.data_input=='3'",
           h5("Paste data below:"),
@@ -75,7 +82,11 @@ ggplot_shiny <- function( dataset = NA ) {
                            "Tab" = "\t",
                            "Comma" = ",",
                            "Space" = " "),
-                      selected = "Semicolon")
+                      selected = "Semicolon"),
+          selectInput("text_dec", "Decimal mark:",
+                      list("Comma" = ",",
+                           "Point" = "."),
+                      selected = "Comma")
         )
       ),
       conditionalPanel(
@@ -171,7 +182,7 @@ ggplot_shiny <- function( dataset = NA ) {
     mainPanel(width = 6,
       tabsetPanel(
         type = "tabs",
-        tabPanel("Data upload", dataTableOutput("out_table")),
+        tabPanel("Data upload", DT::DTOutput("out_table")),
         tabPanel("ggplot",
                  mainPanel(
                    downloadButton("download_plot_PDF",
@@ -234,7 +245,7 @@ p(
   "which is based on the magical but incomprehensible",
   a("docker", href = "https://www.docker.com/"),
   ". Thanks to ",
-  a("Hadley Wicham", href = "http://hadley.nz/"),
+  a("Hadley Wickham", href = "http://hadley.nz/"),
   " for making such good packages (and open access
   books describing them), that allow even low-skilled
   and low-talented programmers like myself to be able to
@@ -490,7 +501,8 @@ p(
           isolate({
             if (input$file_type == "text") {
               data <- read_delim(file_in$datapath,
-                                 delim = input$text_delim,
+                                 delim = input$upload_delim,
+                                 locale = locale(decimal_mark = input$upload_dec),
                                  col_names = TRUE)
             } else if (input$file_type == "Excel") {
               data <- read_excel(file_in$datapath)
@@ -515,6 +527,7 @@ p(
             isolate({
               data <- read_delim(input$data_paste,
                                  delim = input$text_delim,
+                                 locale = locale(decimal_mark = input$text_dec),
                                  col_names = TRUE)
             })
           }
@@ -686,7 +699,7 @@ p(
 ###### GRAPHICAL/TABLE OUTPUT #######
 #####################################
 
-    output$out_table <- renderDataTable(
+    output$out_table <- DT::renderDT(
       df_shiny()
     )
 
