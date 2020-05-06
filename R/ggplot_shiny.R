@@ -459,7 +459,7 @@ p(
                                  is.double(x),
                                df_shiny()))
 
-      # Make list of variables that are not factors
+      # Make list of variables that are factors
       nms_fact <- names(Filter(function(x) is.factor(x) ||
                                  is.logical(x) ||
                                  is.character(x),
