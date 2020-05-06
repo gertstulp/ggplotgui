@@ -583,7 +583,7 @@ p(
           paste("geom_dotplot(binaxis = 'y', binwidth = input$binwidth, ",
                 "stackdir = 'input$dot_dir')", sep = ""),
         if (input$Type == "Dot + Error")
-          paste("geom_point(stat = 'summary', fun.y = 'mean') +\n  ",
+          paste("geom_point(stat = 'summary', fun = 'mean') +\n  ",
                 "geom_errorbar(stat = 'summary', fun.data = 'mean_se', ", "
                 width=0, fun.args = list(mult = input$CI))", sep = ""),
         if (input$Type == "Scatter")
