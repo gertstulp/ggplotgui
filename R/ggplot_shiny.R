@@ -12,7 +12,7 @@
 #' @import RColorBrewer
 #' @importFrom plotly ggplotly plotlyOutput renderPlotly
 #' @importFrom stringr str_replace_all
-#' @importFrom readr read_delim
+#' @importFrom readr read_delim locale
 #' @importFrom DT renderDT DTOutput
 
 
@@ -61,10 +61,10 @@ ggplot_shiny <- function( dataset = NA ) {
                              "Comma" = ",",
                              "Space" = " "),
                         selected = "Semicolon"),
-          selectInput("upload_dec", "Decimal mark:",
-                      list("Comma" = ",",
-                           "Point" = "."),
-                      selected = "Comma")
+            selectInput("upload_dec", "Decimal mark:",
+                        list("Comma" = ",",
+                             "Point" = "."),
+                        selected = "Comma")
           ),
           actionButton("submit_datafile_button",
                        "Submit datafile")
