@@ -106,6 +106,9 @@ ggplot_shiny <- function( dataset = NA ) {
         selectInput("group", "Group (or colour)", choices = ""),
         selectInput("facet_row", "Facet Row", choices = ""),
         selectInput("facet_col", "Facet Column", choices = ""),
+        checkboxInput(inputId = "factor_sort",
+           label = strong("Sort factor levels by their appearance in data"),
+           value = FALSE),
         conditionalPanel(
           condition = "input.Type == 'Boxplot' || input.Type == 'Violin' ||
           input.Type == 'Dot + Error'",
@@ -184,11 +187,14 @@ ggplot_shiny <- function( dataset = NA ) {
         type = "tabs",
         tabPanel("Data upload", DT::DTOutput("out_table")),
         tabPanel("ggplot",
-                 mainPanel(
-                   downloadButton("download_plot_PDF",
-                                  "Download pdf of figure"),
-                   plotOutput("out_ggplot"))
-                ),
+          mainPanel(
+            div(style="display:inline-block;vertical-align:top;width:150px;", downloadButton("download_plot", "Download figure")),
+            div(style="display:inline-block;vertical-align:top;width:150px;", selectInput(inputId = "image_format",
+              label = NULL, choices = c("SVG", "PDF", "PNG"), selected = "SVG")
+            ),
+            plotOutput("out_ggplot")
+          )
+        ),
         tabPanel("Plotly", plotlyOutput("out_plotly")),
         tabPanel("R-code", verbatimTextOutput("out_r_code")),
         tabPanel("Info",
@@ -535,8 +541,27 @@ p(
       } else if (input$data_input == 4){
         data <- dataset
       }
-      return(data)
+
+     return(data)
     })
+
+
+#####################################
+####### DATA PROCESSING #############
+#####################################
+
+    data_processing <- function(data) {
+      data <- as.data.frame(data)
+      if (input$factor_sort) {
+        nms_fact <- names(Filter(function(x) is.factor(x) || is.logical(x) || is.character(x), data))
+        for (colname in nms_fact) {
+          fcol <- data[,colname]
+          data[,colname] <- factor(fcol, levels = unique(fcol))
+        }
+      }
+      return(data)
+    }
+ 
 
 #####################################
 ####### CREATE GRAPH-CODE ###########
@@ -660,7 +685,7 @@ p(
         )
       }
 
-      # Replace name of variables by values
+      # Replace names of variables by values
       p <- str_replace_all(
              p,
              c("input\\$y_var" = input$y_var,
@@ -712,6 +737,7 @@ p(
                                     height = height, {
       # evaluate the string RCode as code
       df <- df_shiny()
+      df <- data_processing(df)
       p <- eval(parse(text = string_code()))
       p
     })
@@ -719,6 +745,7 @@ p(
     output$out_plotly <- renderPlotly({
       # evaluate the string RCode as code
       df <- df_shiny()
+      df <- data_processing(df)
       p <- eval(parse(text = string_code()))
       ggplotly(p)
     })
@@ -761,18 +788,19 @@ p(
 #### GENERATE R-CODE FOR OUTPUT #####
 #####################################
 
-  output$download_plot_PDF <- downloadHandler(
-      filename <- function() {
-        paste("Figure_ggplotGUI_", Sys.time(), ".pdf", sep = "")
+  output$download_plot <- downloadHandler(
+      filename = function() {
+        ext <- tolower(input$image_format)
+        paste0("Figure_ggplotGUI_", Sys.time(), ".", ext)
       },
-      content <- function(file) {
+      content = function(file) {
         df <- df_shiny()
+        df <- data_processing(df)
         p <- eval(parse(text = string_code()))
         ggsave(file, p, width = width_download(),
                height = height_download(), units = "cm")
-      },
-      contentType = "application/pdf" # MIME type of the image
-  )
+      }
+ )
 
     # End R-session when browser closed
     session$onSessionEnded(stopApp)
